@@ -61,14 +61,27 @@ const getByIdValidation = [
  * Validation rules for list with pagination
  */
 const listValidation = [
-  query('page')
+  body('page')
     .optional()
     .isInt({ min: 1 })
     .withMessage('Page harus berupa angka positif'),
-  query('limit')
+  body('limit')
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage('Limit harus antara 1-100'),
+  body('sort_by')
+    .optional()
+    .isString()
+    .withMessage('Sort by harus berupa string'),
+  body('sort_order')
+    .optional()
+    .isIn(['asc', 'desc'])
+    .withMessage('Sort order harus asc atau desc'),
+  body('search')
+    .optional()
+    .isString()
+    .withMessage('Search harus berupa string')
+    .trim(),
 ];
 
 /**

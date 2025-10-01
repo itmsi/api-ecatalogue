@@ -130,6 +130,45 @@ const categorySchemas = {
       }
     }
   },
+  CategoryGetInput: {
+    type: 'object',
+    properties: {
+      page: {
+        type: 'integer',
+        minimum: 1,
+        default: 1,
+        description: 'Page number',
+        example: 1
+      },
+      limit: {
+        type: 'integer',
+        minimum: 1,
+        maximum: 100,
+        default: 10,
+        description: 'Items per page (max 100)',
+        example: 10
+      },
+      sort_by: {
+        type: 'string',
+        default: 'created_at',
+        description: 'Field to sort by',
+        example: 'created_at'
+      },
+      sort_order: {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        default: 'asc',
+        description: 'Sort order',
+        example: 'asc'
+      },
+      search: {
+        type: 'string',
+        default: '',
+        description: 'Search keyword',
+        example: ''
+      }
+    }
+  },
   Pagination: {
     type: 'object',
     properties: {

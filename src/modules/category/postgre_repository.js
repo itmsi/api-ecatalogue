@@ -1,22 +1,59 @@
-const db = require('../../config/database');
+const { pgCore: db } = require('../../config/database');
+const { parseSorting, parseSearch } = require('../../utils/standard_query');
+const { applyPagination, applySorting, applySearch } = require('../../utils/query_builder');
 
 const TABLE_NAME = 'categories';
 
 /**
  * Find all categories with pagination
  */
-const findAll = async (page = 1, limit = 10) => {
+const findAll = async (page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'asc', search = '') => {
   const offset = (page - 1) * limit;
   
-  const data = await db(TABLE_NAME)
+  // Config untuk sorting dan search
+  const allowedSortColumns = ['category_id', 'category_name', 'created_at', 'updated_at'];
+  const searchableColumns = ['category_name', 'category_description'];
+  
+  // Parse sorting dengan validasi
+  const sorting = {
+    sortBy: allowedSortColumns.includes(sortBy) ? sortBy : 'created_at',
+    sortOrder: ['asc', 'desc'].includes(sortOrder?.toLowerCase()) ? sortOrder.toLowerCase() : 'asc'
+  };
+  
+  // Parse search
+  const searchParams = {
+    searchTerm: search && typeof search === 'string' ? search.trim() : '',
+    searchableColumns
+  };
+  
+  // Parse pagination
+  const pagination = { limit: parseInt(limit), offset };
+  
+  // Build query
+  let query = db(TABLE_NAME)
     .select('*')
-    .where({ is_delete: false })
-    .orderBy('created_at', 'desc')
-    .limit(limit)
-    .offset(offset);
+    .where({ is_delete: false });
+  
+  // Apply search
+  query = applySearch(query, searchParams);
+  
+  // Apply sorting
+  query = applySorting(query, sorting);
+  
+  // Apply pagination
+  query = applyPagination(query, pagination);
+  
+  // Execute query
+  const data = await query;
+  
+  // Build count query
+  let countQuery = db(TABLE_NAME)
+    .where({ is_delete: false });
+  
+  // Apply same search filter
+  countQuery = applySearch(countQuery, searchParams);
     
-  const total = await db(TABLE_NAME)
-    .where({ is_delete: false })
+  const total = await countQuery
     .count('category_id as count')
     .first();
     

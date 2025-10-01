@@ -1,13 +1,19 @@
 const repository = require('./postgre_repository');
-const { baseResponse, errorResponse } = require('../../utils/response');
+const { baseResponse, errorResponse } = require('../../utils');
 
 /**
  * Get all categories with pagination
  */
 const getAll = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const data = await repository.findAll(page, limit);
+    const { 
+      page = 1, 
+      limit = 10,
+      sort_by = 'created_at',
+      sort_order = 'asc',
+      search = ''
+    } = req.body;
+    const data = await repository.findAll(page, limit, sort_by, sort_order, search);
     return baseResponse(res, { data });
   } catch (error) {
     return errorResponse(res, error);

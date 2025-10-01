@@ -13,12 +13,12 @@ const { verifyToken } = require('../../middlewares/token');
 const { validateMiddleware } = require('../../middlewares/validation');
 
 /**
- * @route   GET /api/categories
+ * @route   POST /api/categories/get
  * @desc    Get all categories with pagination
  * @access  Protected
  */
-router.get(
-  '/',
+router.post(
+  '/get',
   verifyToken,
   listValidation,
   validateMiddleware,
@@ -65,12 +65,12 @@ router.get(
 );
 
 /**
- * @route   POST /api/categories
+ * @route   POST /api/categories/create
  * @desc    Create new category
  * @access  Protected
  */
 router.post(
-  '/',
+  '/create',
   verifyToken,
   createValidation,
   validateMiddleware,

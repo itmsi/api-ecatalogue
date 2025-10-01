@@ -15,13 +15,30 @@ const successResponse = (res, data = null, message = 'Success', statusCode = 200
 }
 
 /**
+ * Base response (alias for successResponse)
+ */
+const baseResponse = (res, data = null, statusCode = 200) => {
+  return successResponse(res, data?.data || data, data?.message || 'Success', statusCode)
+}
+
+/**
  * Error response
  */
-const errorResponse = (res, message = 'Error', statusCode = 500, errors = null) => {
-  return res.status(statusCode).json({
+const errorResponse = (res, error, statusCode = null, errors = null) => {
+  // Handle if error is an object with message property
+  const message = typeof error === 'object' && error?.message 
+    ? error.message 
+    : typeof error === 'string' 
+    ? error 
+    : 'Internal Server Error';
+  
+  const code = statusCode || error?.statusCode || error?.code || 500;
+  
+  return res.status(code).json({
     success: false,
     message,
-    errors,
+    error: message,
+    errors: errors || error?.errors || null,
     timestamp: new Date().toISOString()
   })
 }
@@ -73,6 +90,7 @@ const forbiddenResponse = (res, message = 'Forbidden') => {
 
 module.exports = {
   successResponse,
+  baseResponse,
   errorResponse,
   validationErrorResponse,
   notFoundResponse,
