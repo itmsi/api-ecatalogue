@@ -100,9 +100,6 @@ const create = async (req, res) => {
     const payload = {
       category_id: req.body.category_id && req.body.category_id.trim() !== '' ? req.body.category_id : null,
       catalog_parent_id: req.body.catalog_parent_id && req.body.catalog_parent_id.trim() !== '' ? req.body.catalog_parent_id : null,
-      target_id: req.body.target_id || null,
-      diagram_serial_number: req.body.diagram_serial_number || null,
-      part_number: req.body.part_number || null,
       catalog_name_en: req.body.catalog_name_en || null,
       catalog_name_ch: req.body.catalog_name_ch || null,
       catalog_quantity: req.body.catalog_quantity !== undefined ? parseInt(req.body.catalog_quantity) : null,
@@ -177,9 +174,6 @@ const update = async (req, res) => {
       catalog_parent_id: req.body.catalog_parent_id !== undefined && req.body.catalog_parent_id !== null
         ? (req.body.catalog_parent_id.trim() !== '' ? req.body.catalog_parent_id : null)
         : req.body.catalog_parent_id,
-      target_id: req.body.target_id || null,
-      diagram_serial_number: req.body.diagram_serial_number || null,
-      part_number: req.body.part_number || null,
       catalog_name_en: req.body.catalog_name_en || null,
       catalog_name_ch: req.body.catalog_name_ch || null,
       catalog_quantity: req.body.catalog_quantity !== undefined ? parseInt(req.body.catalog_quantity) : null,

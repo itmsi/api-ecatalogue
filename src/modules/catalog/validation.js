@@ -22,21 +22,6 @@ const createValidation = [
       return uuidRegex.test(value);
     })
     .withMessage('Format catalog_parent_id tidak valid'),
-  body('target_id')
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage('Target ID maksimal 255 karakter')
-    .trim(),
-  body('diagram_serial_number')
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage('Diagram serial number maksimal 255 karakter')
-    .trim(),
-  body('part_number')
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage('Part number maksimal 255 karakter')
-    .trim(),
   body('catalog_name_en')
     .optional()
     .isLength({ max: 255 })
@@ -86,21 +71,6 @@ const updateValidation = [
       return uuidRegex.test(value);
     })
     .withMessage('Format catalog_parent_id tidak valid'),
-  body('target_id')
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage('Target ID maksimal 255 karakter')
-    .trim(),
-  body('diagram_serial_number')
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage('Diagram serial number maksimal 255 karakter')
-    .trim(),
-  body('part_number')
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage('Part number maksimal 255 karakter')
-    .trim(),
   body('catalog_name_en')
     .optional()
     .isLength({ max: 255 })

@@ -37,9 +37,7 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
   if (filters.search) {
     query = query.where(function() {
       this.where('catalogs.catalog_name_en', 'ilike', `%${filters.search}%`)
-        .orWhere('catalogs.catalog_name_ch', 'ilike', `%${filters.search}%`)
-        .orWhere('catalogs.part_number', 'ilike', `%${filters.search}%`)
-        .orWhere('catalogs.target_id', 'ilike', `%${filters.search}%`);
+        .orWhere('catalogs.catalog_name_ch', 'ilike', `%${filters.search}%`);
     });
   }
     
@@ -60,9 +58,7 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
   if (filters.search) {
     countQuery = countQuery.where(function() {
       this.where('catalog_name_en', 'ilike', `%${filters.search}%`)
-        .orWhere('catalog_name_ch', 'ilike', `%${filters.search}%`)
-        .orWhere('part_number', 'ilike', `%${filters.search}%`)
-        .orWhere('target_id', 'ilike', `%${filters.search}%`);
+        .orWhere('catalog_name_ch', 'ilike', `%${filters.search}%`);
     });
   }
   

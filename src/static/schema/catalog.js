@@ -44,24 +44,6 @@ const catalogSchemas = {
         description: 'Nama parent catalog (dari join table)',
         example: 'Main Catalog'
       },
-      target_id: {
-        type: 'string',
-        nullable: true,
-        description: 'Target identifier',
-        example: 'T-001'
-      },
-      diagram_serial_number: {
-        type: 'string',
-        nullable: true,
-        description: 'Serial number diagram',
-        example: 'DS-12345'
-      },
-      part_number: {
-        type: 'string',
-        nullable: true,
-        description: 'Part number',
-        example: 'PN-98765'
-      },
       catalog_name_en: {
         type: 'string',
         nullable: true,
@@ -155,24 +137,6 @@ const catalogSchemas = {
         description: 'Foreign key ke parent catalog',
         example: '123e4567-e89b-12d3-a456-426614174002'
       },
-      target_id: {
-        type: 'string',
-        maxLength: 255,
-        description: 'Target identifier',
-        example: 'T-001'
-      },
-      diagram_serial_number: {
-        type: 'string',
-        maxLength: 255,
-        description: 'Serial number diagram',
-        example: 'DS-12345'
-      },
-      part_number: {
-        type: 'string',
-        maxLength: 255,
-        description: 'Part number',
-        example: 'PN-98765'
-      },
       catalog_name_en: {
         type: 'string',
         maxLength: 255,
@@ -221,27 +185,6 @@ const catalogSchemas = {
         nullable: true,
         description: 'Foreign key ke parent catalog',
         example: '123e4567-e89b-12d3-a456-426614174002'
-      },
-      target_id: {
-        type: 'string',
-        maxLength: 255,
-        nullable: true,
-        description: 'Target identifier',
-        example: 'T-001'
-      },
-      diagram_serial_number: {
-        type: 'string',
-        maxLength: 255,
-        nullable: true,
-        description: 'Serial number diagram',
-        example: 'DS-12345'
-      },
-      part_number: {
-        type: 'string',
-        maxLength: 255,
-        nullable: true,
-        description: 'Part number',
-        example: 'PN-98765'
       },
       catalog_name_en: {
         type: 'string',
@@ -300,7 +243,7 @@ const catalogSchemas = {
       search: {
         type: 'string',
         default: '',
-        description: 'Search keyword (catalog names, part number, target ID)',
+        description: 'Search keyword (catalog names)',
         example: 'smartphone'
       },
       sort_by: {
