@@ -15,10 +15,7 @@ const createValidation = [
     .isLength({ max: 1000 })
     .withMessage('Deskripsi kategori maksimal 1000 karakter')
     .trim(),
-  body('created_by')
-    .optional()
-    .isUUID()
-    .withMessage('Format created_by tidak valid'),
+  // created_by akan diisi otomatis dari token, tidak perlu dari body
 ];
 
 /**
@@ -40,10 +37,7 @@ const updateValidation = [
     .isLength({ max: 1000 })
     .withMessage('Deskripsi kategori maksimal 1000 karakter')
     .trim(),
-  body('updated_by')
-    .optional()
-    .isUUID()
-    .withMessage('Format updated_by tidak valid'),
+  // updated_by akan diisi otomatis dari token, tidak perlu dari body
 ];
 
 /**
@@ -112,10 +106,7 @@ const restoreValidation = [
     .withMessage('ID wajib diisi')
     .isUUID()
     .withMessage('Format ID tidak valid'),
-  body('updated_by')
-    .optional()
-    .isUUID()
-    .withMessage('Format updated_by tidak valid'),
+  // updated_by akan diisi otomatis dari token saat restore
 ];
 
 module.exports = {

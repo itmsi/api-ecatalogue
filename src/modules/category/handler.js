@@ -75,7 +75,14 @@ const getById = async (req, res) => {
  */
 const create = async (req, res) => {
   try {
-    const data = await repository.create(req.body);
+    // Auto-fill created_by dari token
+    const employeeId = req.user?.employee_id || req.user?.user_id || null;
+    const payload = {
+      ...req.body,
+      created_by: employeeId
+    };
+    
+    const data = await repository.create(payload);
     return baseResponse(res, { 
       data,
       message: 'Kategori berhasil dibuat' 
@@ -91,7 +98,15 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await repository.update(id, req.body);
+    
+    // Auto-fill updated_by dari token
+    const employeeId = req.user?.employee_id || req.user?.user_id || null;
+    const payload = {
+      ...req.body,
+      updated_by: employeeId
+    };
+    
+    const data = await repository.update(id, payload);
     
     if (!data) {
       return errorResponse(res, { message: 'Kategori tidak ditemukan' }, 404);
@@ -112,7 +127,9 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedBy = req.user?.id || req.body.deleted_by || null;
+    
+    // Auto-fill deleted_by dari token
+    const deletedBy = req.user?.employee_id || req.user?.user_id || null;
     const result = await repository.remove(id, deletedBy);
     
     if (!result) {
@@ -133,7 +150,9 @@ const remove = async (req, res) => {
 const restore = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedBy = req.user?.id || req.body.updated_by || null;
+    
+    // Auto-fill updated_by dari token (saat restore)
+    const updatedBy = req.user?.employee_id || req.user?.user_id || null;
     const data = await repository.restore(id, updatedBy);
     
     if (!data) {

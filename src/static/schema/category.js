@@ -86,14 +86,9 @@ const categorySchemas = {
         maxLength: 1000,
         description: 'Description of the category',
         example: 'Electronic devices and gadgets'
-      },
-      created_by: {
-        type: 'string',
-        format: 'uuid',
-        description: 'User ID who created the category',
-        example: '123e4567-e89b-12d3-a456-426614174000'
       }
-    }
+    },
+    description: 'created_by akan diisi otomatis dari token'
   },
   CategoryUpdateInput: {
     type: 'object',
@@ -110,25 +105,14 @@ const categorySchemas = {
         maxLength: 1000,
         description: 'Description of the category',
         example: 'Electronic devices and gadgets - updated description'
-      },
-      updated_by: {
-        type: 'string',
-        format: 'uuid',
-        description: 'User ID who updated the category',
-        example: '123e4567-e89b-12d3-a456-426614174000'
       }
-    }
+    },
+    description: 'updated_by akan diisi otomatis dari token'
   },
   CategoryRestoreInput: {
     type: 'object',
-    properties: {
-      updated_by: {
-        type: 'string',
-        format: 'uuid',
-        description: 'User ID who restored the category',
-        example: '123e4567-e89b-12d3-a456-426614174000'
-      }
-    }
+    properties: {},
+    description: 'updated_by akan diisi otomatis dari token saat restore'
   },
   CategoryGetInput: {
     type: 'object',
