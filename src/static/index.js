@@ -13,11 +13,11 @@ const info = {
 
 const servers = [
   {
-    url: '/api/',
+    url: '/api/catalogs/',
     description: 'Development server'
   },
   {
-    url: 'https://your-production-url.com/api/',
+    url: 'https://your-production-url.com/api/catalogs/',
     description: 'Production server'
   }
 ]
