@@ -11,8 +11,8 @@ const findAll = async (page = 1, limit = 10, sortBy = 'created_at', sortOrder = 
   const offset = (page - 1) * limit;
   
   // Config untuk sorting dan search
-  const allowedSortColumns = ['category_id', 'category_name', 'created_at', 'updated_at'];
-  const searchableColumns = ['category_name', 'category_description'];
+  const allowedSortColumns = ['category_id', 'category_name_en', 'category_name_ch', 'created_at', 'updated_at'];
+  const searchableColumns = ['category_name_en', 'category_name_ch', 'category_description'];
   
   // Parse sorting dengan validasi
   const sorting = {

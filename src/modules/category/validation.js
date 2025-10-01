@@ -4,11 +4,16 @@ const { body, param, query } = require('express-validator');
  * Validation rules for creating category
  */
 const createValidation = [
-  body('category_name')
+  body('category_name_en')
     .notEmpty()
-    .withMessage('Nama kategori wajib diisi')
+    .withMessage('Nama kategori (EN) wajib diisi')
     .isLength({ min: 3, max: 255 })
-    .withMessage('Nama kategori harus antara 3-255 karakter')
+    .withMessage('Nama kategori (EN) harus antara 3-255 karakter')
+    .trim(),
+  body('category_name_ch')
+    .optional()
+    .isLength({ min: 1, max: 255 })
+    .withMessage('Nama kategori (CH) maksimal 255 karakter')
     .trim(),
   body('category_description')
     .optional()
@@ -27,10 +32,15 @@ const updateValidation = [
     .withMessage('ID wajib diisi')
     .isUUID()
     .withMessage('Format ID tidak valid'),
-  body('category_name')
+  body('category_name_en')
     .optional()
     .isLength({ min: 3, max: 255 })
-    .withMessage('Nama kategori harus antara 3-255 karakter')
+    .withMessage('Nama kategori (EN) harus antara 3-255 karakter')
+    .trim(),
+  body('category_name_ch')
+    .optional()
+    .isLength({ min: 1, max: 255 })
+    .withMessage('Nama kategori (CH) maksimal 255 karakter')
     .trim(),
   body('category_description')
     .optional()

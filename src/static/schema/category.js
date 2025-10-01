@@ -12,10 +12,16 @@ const categorySchemas = {
         description: 'Unique category identifier',
         example: '123e4567-e89b-12d3-a456-426614174000'
       },
-      category_name: {
+      category_name_en: {
         type: 'string',
-        description: 'Name of the category',
+        description: 'Name of the category (English)',
         example: 'Electronics'
+      },
+      category_name_ch: {
+        type: 'string',
+        nullable: true,
+        description: 'Name of the category (Chinese)',
+        example: '电子产品'
       },
       category_description: {
         type: 'string',
@@ -72,14 +78,20 @@ const categorySchemas = {
   },
   CategoryInput: {
     type: 'object',
-    required: ['category_name'],
+    required: ['category_name_en'],
     properties: {
-      category_name: {
+      category_name_en: {
         type: 'string',
         minLength: 3,
         maxLength: 255,
-        description: 'Name of the category',
+        description: 'Name of the category (English)',
         example: 'Electronics'
+      },
+      category_name_ch: {
+        type: 'string',
+        maxLength: 255,
+        description: 'Name of the category (Chinese)',
+        example: '电子产品'
       },
       category_description: {
         type: 'string',
@@ -93,12 +105,18 @@ const categorySchemas = {
   CategoryUpdateInput: {
     type: 'object',
     properties: {
-      category_name: {
+      category_name_en: {
         type: 'string',
         minLength: 3,
         maxLength: 255,
-        description: 'Name of the category',
+        description: 'Name of the category (English)',
         example: 'Electronics Updated'
+      },
+      category_name_ch: {
+        type: 'string',
+        maxLength: 255,
+        description: 'Name of the category (Chinese)',
+        example: '电子产品更新'
       },
       category_description: {
         type: 'string',
