@@ -56,11 +56,14 @@ const catalogPaths = {
     post: {
       tags: ['Catalogs'],
       summary: 'Create new catalog',
-      description: 'Create a new catalog item',
+      description: 'Create a new catalog item with optional image upload',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
+          'multipart/form-data': {
+            schema: { $ref: '#/components/schemas/CatalogInput' }
+          },
           'application/json': {
             schema: { $ref: '#/components/schemas/CatalogInput' }
           }
@@ -155,7 +158,7 @@ const catalogPaths = {
     put: {
       tags: ['Catalogs'],
       summary: 'Update catalog',
-      description: 'Update an existing catalog',
+      description: 'Update an existing catalog with optional image upload',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -172,8 +175,11 @@ const catalogPaths = {
       requestBody: {
         required: true,
         content: {
+          'multipart/form-data': {
+            schema: { $ref: '#/components/schemas/CatalogUpdateInput' }
+          },
           'application/json': {
-            schema: { $ref: '#/components/schemas/CatalogInput' }
+            schema: { $ref: '#/components/schemas/CatalogUpdateInput' }
           }
         }
       },

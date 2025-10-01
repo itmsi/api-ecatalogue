@@ -1,5 +1,7 @@
 const repository = require('./postgre_repository');
 const { baseResponse, errorResponse } = require('../../utils/response');
+const { uploadToMinio } = require('../../config/minio');
+const { generateCatalogImageFileName } = require('../../middlewares/fileUpload');
 
 /**
  * Get all items with pagination
@@ -68,13 +70,50 @@ const create = async (req, res) => {
     // Auto-fill created_by dari token (jika ada)
     const employeeId = req.user?.employee_id || req.user?.user_id || null;
     
-    // Convert empty string to null untuk UUID fields
+    let catalogImageUrl = null;
+    
+    // Handle file upload jika ada file catalog_image
+    if (req.file && req.file.buffer) {
+      try {
+        const fileName = generateCatalogImageFileName(req.file.originalname);
+        const contentType = req.file.mimetype;
+        
+        const uploadResult = await uploadToMinio(fileName, req.file.buffer, contentType);
+        
+        if (uploadResult.success) {
+          catalogImageUrl = uploadResult.url;
+        } else {
+          console.error('Failed to upload catalog image:', uploadResult.error);
+          return errorResponse(res, { 
+            message: 'Gagal mengupload gambar katalog' 
+          }, 500);
+        }
+      } catch (uploadError) {
+        console.error('Error uploading catalog image:', uploadError);
+        return errorResponse(res, { 
+          message: 'Error saat mengupload gambar katalog' 
+        }, 500);
+      }
+    }
+    
+    // Convert empty string to null untuk UUID fields dan handle catalog_image dengan benar
     const payload = {
-      ...req.body,
       category_id: req.body.category_id && req.body.category_id.trim() !== '' ? req.body.category_id : null,
       catalog_parent_id: req.body.catalog_parent_id && req.body.catalog_parent_id.trim() !== '' ? req.body.catalog_parent_id : null,
+      target_id: req.body.target_id || null,
+      diagram_serial_number: req.body.diagram_serial_number || null,
+      part_number: req.body.part_number || null,
+      catalog_name_en: req.body.catalog_name_en || null,
+      catalog_name_ch: req.body.catalog_name_ch || null,
+      catalog_quantity: req.body.catalog_quantity !== undefined ? parseInt(req.body.catalog_quantity) : null,
+      catalog_description: req.body.catalog_description || null,
       created_by: employeeId
     };
+    
+    // Hanya tambahkan catalog_image jika ada file yang diupload
+    if (catalogImageUrl !== null) {
+      payload.catalog_image = catalogImageUrl;
+    }
     
     const data = await repository.create(payload);
     return baseResponse(res, { 
@@ -96,17 +135,67 @@ const update = async (req, res) => {
     // Auto-fill updated_by dari token (jika ada)
     const employeeId = req.user?.employee_id || req.user?.user_id || null;
     
-    // Convert empty string to null untuk UUID fields
+    let catalogImageUrl = null;
+    
+    // Handle file upload jika ada file catalog_image
+    console.log('Update request - req.file:', req.file);
+    console.log('Update request - req.body keys:', Object.keys(req.body));
+    console.log('Update request - req.body.catalog_image:', req.body.catalog_image);
+    
+    if (req.file && req.file.buffer) {
+      console.log('File detected, uploading to MinIO...');
+      try {
+        const fileName = generateCatalogImageFileName(req.file.originalname);
+        const contentType = req.file.mimetype;
+        
+        const uploadResult = await uploadToMinio(fileName, req.file.buffer, contentType);
+        
+        if (uploadResult.success) {
+          catalogImageUrl = uploadResult.url;
+          console.log('File uploaded successfully:', catalogImageUrl);
+        } else {
+          console.error('Failed to upload catalog image:', uploadResult.error);
+          return errorResponse(res, { 
+            message: 'Gagal mengupload gambar katalog' 
+          }, 500);
+        }
+      } catch (uploadError) {
+        console.error('Error uploading catalog image:', uploadError);
+        return errorResponse(res, { 
+          message: 'Error saat mengupload gambar katalog' 
+        }, 500);
+      }
+    } else {
+      console.log('No file detected, preserving existing catalog_image');
+    }
+    
+    // Convert empty string to null untuk UUID fields dan handle catalog_image dengan benar
     const payload = {
-      ...req.body,
       category_id: req.body.category_id !== undefined && req.body.category_id !== null 
         ? (req.body.category_id.trim() !== '' ? req.body.category_id : null)
         : req.body.category_id,
       catalog_parent_id: req.body.catalog_parent_id !== undefined && req.body.catalog_parent_id !== null
         ? (req.body.catalog_parent_id.trim() !== '' ? req.body.catalog_parent_id : null)
         : req.body.catalog_parent_id,
+      target_id: req.body.target_id || null,
+      diagram_serial_number: req.body.diagram_serial_number || null,
+      part_number: req.body.part_number || null,
+      catalog_name_en: req.body.catalog_name_en || null,
+      catalog_name_ch: req.body.catalog_name_ch || null,
+      catalog_quantity: req.body.catalog_quantity !== undefined ? parseInt(req.body.catalog_quantity) : null,
+      catalog_description: req.body.catalog_description || null,
       updated_by: employeeId
     };
+    
+    // Hanya update catalog_image jika ada file baru yang diupload
+    if (catalogImageUrl !== null) {
+      payload.catalog_image = catalogImageUrl;
+      console.log('Adding catalog_image to payload:', catalogImageUrl);
+    } else {
+      console.log('Not adding catalog_image to payload, preserving existing value');
+    }
+    
+    console.log('Final payload for update:', payload);
     
     const data = await repository.update(id, payload);
     

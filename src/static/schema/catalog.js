@@ -193,11 +193,87 @@ const catalogSchemas = {
       },
       catalog_image: {
         type: 'string',
-        description: 'URL atau path gambar catalog',
-        example: 'https://example.com/images/catalog.jpg'
+        format: 'binary',
+        nullable: true,
+        description: 'File gambar catalog (JPG, PNG, GIF, WebP, SVG) - maksimal 10MB. Optional field.',
+        example: 'catalog-image.jpg'
       },
       catalog_description: {
         type: 'string',
+        description: 'Deskripsi catalog',
+        example: 'Complete set of electronic components for Arduino projects'
+      }
+    }
+  },
+  CatalogUpdateInput: {
+    type: 'object',
+    properties: {
+      category_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Foreign key ke tabel categories',
+        example: '123e4567-e89b-12d3-a456-426614174001'
+      },
+      catalog_parent_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Foreign key ke parent catalog',
+        example: '123e4567-e89b-12d3-a456-426614174002'
+      },
+      target_id: {
+        type: 'string',
+        maxLength: 255,
+        nullable: true,
+        description: 'Target identifier',
+        example: 'T-001'
+      },
+      diagram_serial_number: {
+        type: 'string',
+        maxLength: 255,
+        nullable: true,
+        description: 'Serial number diagram',
+        example: 'DS-12345'
+      },
+      part_number: {
+        type: 'string',
+        maxLength: 255,
+        nullable: true,
+        description: 'Part number',
+        example: 'PN-98765'
+      },
+      catalog_name_en: {
+        type: 'string',
+        maxLength: 255,
+        nullable: true,
+        description: 'Nama catalog dalam bahasa Inggris',
+        example: 'Electronic Component Set'
+      },
+      catalog_name_ch: {
+        type: 'string',
+        maxLength: 255,
+        nullable: true,
+        description: 'Nama catalog dalam bahasa China',
+        example: '电子元件套装'
+      },
+      catalog_quantity: {
+        type: 'integer',
+        minimum: 0,
+        nullable: true,
+        description: 'Jumlah/kuantitas catalog',
+        example: 100
+      },
+      catalog_image: {
+        type: 'string',
+        format: 'binary',
+        nullable: true,
+        description: 'File gambar catalog (JPG, PNG, GIF, WebP, SVG) - maksimal 10MB. Untuk update, jika tidak diisi maka gambar lama akan tetap dipertahankan.',
+        example: 'catalog-image.jpg'
+      },
+      catalog_description: {
+        type: 'string',
+        nullable: true,
         description: 'Deskripsi catalog',
         example: 'Complete set of electronic components for Arduino projects'
       }

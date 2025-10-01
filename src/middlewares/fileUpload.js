@@ -92,6 +92,19 @@ const generateFileName = (originalName) => {
   return `powerbi/${timestamp}_${uuid}_${sanitizedName}${extension}`;
 };
 
+// Generate unique filename for catalog images
+const generateCatalogImageFileName = (originalName) => {
+  const timestamp = Date.now();
+  const uuid = uuidv4();
+  const extension = path.extname(originalName);
+  const baseName = path.basename(originalName, extension);
+  
+  // Sanitize filename
+  const sanitizedName = baseName.replace(/[^a-zA-Z0-9-_]/g, '_');
+  
+  return `catalog-images/${timestamp}_${uuid}_${sanitizedName}${extension}`;
+};
+
 // Get content type based on file extension
 const getContentType = (filename) => {
   const extension = path.extname(filename).toLowerCase();
@@ -109,8 +122,97 @@ const getContentType = (filename) => {
   return contentTypes[extension] || 'application/octet-stream';
 };
 
+// Image file filter function
+const imageFileFilter = (req, file, cb) => {
+  // Allow specific image file types
+  const allowedTypes = [
+    'image/jpeg',
+    'image/jpg', 
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml'
+  ];
+
+  // Check file extension as fallback
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+
+  if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
+    cb(null, true);
+  } else {
+    cb(new Error(`File type not allowed. Allowed types: ${allowedExtensions.join(', ')}`), false);
+  }
+};
+
+// Configure multer for image uploads
+const imageUpload = multer({
+  storage: storage,
+  fileFilter: imageFileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit for images
+    files: 1 // Only one file per request
+  }
+});
+
+// Middleware for single image upload
+const uploadSingleImage = imageUpload.single('catalog_image');
+
+// Alternative: use fields to handle optional file
+const uploadImageFields = imageUpload.fields([{ name: 'catalog_image', maxCount: 1 }]);
+
+// Middleware wrapper to handle image upload errors
+const handleImageUpload = (req, res, next) => {
+  uploadImageFields(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File terlalu besar. Maksimal 10MB.',
+          error: err.message
+        });
+      }
+      if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Terlalu banyak file. Hanya satu file yang diizinkan.',
+          error: err.message
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Error upload file',
+        error: err.message
+      });
+    } else if (err) {
+      // Handle file validation errors
+      if (err.message.includes('File type not allowed')) {
+        return res.status(400).json({
+          success: false,
+          message: 'File tidak valid. Hanya file gambar yang diizinkan.',
+          error: err.message
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Error upload file',
+        error: err.message
+      });
+    }
+    
+    // Convert req.files to req.file format for compatibility
+    if (req.files && req.files.catalog_image && req.files.catalog_image.length > 0) {
+      req.file = req.files.catalog_image[0];
+    }
+    
+    next();
+  });
+};
+
 module.exports = {
   handleFileUpload,
+  handleImageUpload,
   generateFileName,
+  generateCatalogImageFileName,
   getContentType
 };
