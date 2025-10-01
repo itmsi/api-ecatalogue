@@ -2,6 +2,49 @@ const repository = require('./postgre_repository');
 const { baseResponse, errorResponse } = require('../../utils/response');
 const { uploadToMinio } = require('../../config/minio');
 const { generateCatalogImageFileName } = require('../../middlewares/fileUpload');
+const csv = require('csv-parser');
+const { Readable } = require('stream');
+const { pgCore: db } = require('../../config/database');
+
+/**
+ * Helper function to parse CSV file
+ */
+const parseCsvFile = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    const stream = Readable.from(buffer);
+    
+    stream
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', () => resolve(results))
+      .on('error', (error) => reject(error));
+  });
+};
+
+/**
+ * Validate CSV row data
+ */
+const validateCsvRow = (row, rowIndex) => {
+  const errors = [];
+  
+  // Validasi kolom yang diperlukan ada
+  const requiredColumns = ['target_id', 'diagram_serial_number', 'part_number', 
+                           'catalog_item_name_en', 'catalog_item_name_ch', 'catalog_item_quantity'];
+  
+  for (const col of requiredColumns) {
+    if (!(col in row)) {
+      errors.push(`Baris ${rowIndex + 1}: Kolom '${col}' tidak ditemukan`);
+    }
+  }
+  
+  // Validasi catalog_item_quantity harus angka
+  if (row.catalog_item_quantity && isNaN(parseInt(row.catalog_item_quantity))) {
+    errors.push(`Baris ${rowIndex + 1}: catalog_item_quantity harus berupa angka`);
+  }
+  
+  return errors;
+};
 
 /**
  * Get all items with pagination
@@ -66,6 +109,9 @@ const getChildren = async (req, res) => {
  * Create new item
  */
 const create = async (req, res) => {
+  // Gunakan transaction untuk rollback jika ada error
+  const trx = await db.transaction();
+  
   try {
     // Auto-fill created_by dari token (jika ada)
     const employeeId = req.user?.employee_id || req.user?.user_id || null;
@@ -78,20 +124,26 @@ const create = async (req, res) => {
         const fileName = generateCatalogImageFileName(req.file.originalname);
         const contentType = req.file.mimetype;
         
+        console.log('Uploading catalog image:', fileName);
         const uploadResult = await uploadToMinio(fileName, req.file.buffer, contentType);
+        console.log('Upload result:', uploadResult);
         
         if (uploadResult.success) {
           catalogImageUrl = uploadResult.url;
         } else {
-          console.error('Failed to upload catalog image:', uploadResult.error);
+          console.error('Failed to upload catalog image:', uploadResult.error || 'MinIO may be disabled or not configured');
+          await trx.rollback();
           return errorResponse(res, { 
-            message: 'Gagal mengupload gambar katalog' 
+            message: 'Gagal mengupload gambar katalog',
+            detail: uploadResult.error || 'MinIO tidak aktif atau belum dikonfigurasi dengan benar. Periksa environment variables: S3_PROVIDER, S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET'
           }, 500);
         }
       } catch (uploadError) {
         console.error('Error uploading catalog image:', uploadError);
+        await trx.rollback();
         return errorResponse(res, { 
-          message: 'Error saat mengupload gambar katalog' 
+          message: 'Error saat mengupload gambar katalog',
+          detail: uploadError.message
         }, 500);
       }
     }
@@ -112,12 +164,75 @@ const create = async (req, res) => {
       payload.catalog_image = catalogImageUrl;
     }
     
-    const data = await repository.create(payload);
+    // Create catalog dengan transaction
+    const data = await repository.createWithTransaction(trx, payload);
+    
+    // Process CSV file jika ada
+    if (req.files && req.files.data_csv && req.files.data_csv.length > 0) {
+      const csvFile = req.files.data_csv[0];
+      
+      try {
+        // Parse CSV
+        const csvData = await parseCsvFile(csvFile.buffer);
+        
+        if (csvData.length === 0) {
+          await trx.rollback();
+          return errorResponse(res, { 
+            message: 'File CSV kosong atau format tidak valid' 
+          }, 400);
+        }
+        
+        // Validasi setiap baris CSV
+        const validationErrors = [];
+        csvData.forEach((row, index) => {
+          const errors = validateCsvRow(row, index);
+          validationErrors.push(...errors);
+        });
+        
+        if (validationErrors.length > 0) {
+          await trx.rollback();
+          return errorResponse(res, { 
+            message: 'Validasi CSV gagal',
+            errors: validationErrors
+          }, 400);
+        }
+        
+        // Prepare catalog items data
+        const catalogItems = csvData.map(row => ({
+          catalog_id: data.catalog_id,
+          target_id: row.target_id || null,
+          diagram_serial_number: row.diagram_serial_number || null,
+          part_number: row.part_number || null,
+          catalog_item_name_en: row.catalog_item_name_en || null,
+          catalog_item_name_ch: row.catalog_item_name_ch || null,
+          catalog_item_quantity: row.catalog_item_quantity ? parseInt(row.catalog_item_quantity) : 0,
+          catalog_item_description: row.catalog_item_description || null,
+          created_by: employeeId
+        }));
+        
+        // Insert catalog items dengan transaction
+        await repository.createCatalogItemsWithTransaction(trx, catalogItems);
+        
+      } catch (csvError) {
+        console.error('Error processing CSV:', csvError);
+        await trx.rollback();
+        return errorResponse(res, { 
+          message: 'Error saat memproses file CSV',
+          error: csvError.message
+        }, 500);
+      }
+    }
+    
+    // Commit transaction jika semua berhasil
+    await trx.commit();
+    
     return baseResponse(res, { 
       data,
       message: 'Data katalog berhasil dibuat' 
     }, 201);
   } catch (error) {
+    // Rollback jika ada error
+    await trx.rollback();
     return errorResponse(res, error);
   }
 };
@@ -126,6 +241,9 @@ const create = async (req, res) => {
  * Update existing item
  */
 const update = async (req, res) => {
+  // Gunakan transaction untuk rollback jika ada error
+  const trx = await db.transaction();
+  
   try {
     const { id } = req.params;
     
@@ -145,21 +263,27 @@ const update = async (req, res) => {
         const fileName = generateCatalogImageFileName(req.file.originalname);
         const contentType = req.file.mimetype;
         
+        console.log('Uploading catalog image:', fileName);
         const uploadResult = await uploadToMinio(fileName, req.file.buffer, contentType);
+        console.log('Upload result:', uploadResult);
         
         if (uploadResult.success) {
           catalogImageUrl = uploadResult.url;
           console.log('File uploaded successfully:', catalogImageUrl);
         } else {
-          console.error('Failed to upload catalog image:', uploadResult.error);
+          console.error('Failed to upload catalog image:', uploadResult.error || 'MinIO may be disabled or not configured');
+          await trx.rollback();
           return errorResponse(res, { 
-            message: 'Gagal mengupload gambar katalog' 
+            message: 'Gagal mengupload gambar katalog',
+            detail: uploadResult.error || 'MinIO tidak aktif atau belum dikonfigurasi dengan benar. Periksa environment variables: S3_PROVIDER, S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET'
           }, 500);
         }
       } catch (uploadError) {
         console.error('Error uploading catalog image:', uploadError);
+        await trx.rollback();
         return errorResponse(res, { 
-          message: 'Error saat mengupload gambar katalog' 
+          message: 'Error saat mengupload gambar katalog',
+          detail: uploadError.message
         }, 500);
       }
     } else {
@@ -191,17 +315,83 @@ const update = async (req, res) => {
     
     console.log('Final payload for update:', payload);
     
-    const data = await repository.update(id, payload);
+    // Update catalog dengan transaction
+    const data = await repository.updateWithTransaction(trx, id, payload);
     
     if (!data) {
+      await trx.rollback();
       return errorResponse(res, { message: 'Data katalog tidak ditemukan' }, 404);
     }
+    
+    // Process CSV file jika ada
+    if (req.files && req.files.data_csv && req.files.data_csv.length > 0) {
+      const csvFile = req.files.data_csv[0];
+      
+      try {
+        // Parse CSV
+        const csvData = await parseCsvFile(csvFile.buffer);
+        
+        if (csvData.length === 0) {
+          await trx.rollback();
+          return errorResponse(res, { 
+            message: 'File CSV kosong atau format tidak valid' 
+          }, 400);
+        }
+        
+        // Validasi setiap baris CSV
+        const validationErrors = [];
+        csvData.forEach((row, index) => {
+          const errors = validateCsvRow(row, index);
+          validationErrors.push(...errors);
+        });
+        
+        if (validationErrors.length > 0) {
+          await trx.rollback();
+          return errorResponse(res, { 
+            message: 'Validasi CSV gagal',
+            errors: validationErrors
+          }, 400);
+        }
+        
+        // Hapus catalog items lama terlebih dahulu (soft delete)
+        await repository.deleteCatalogItemsByCatalogIdWithTransaction(trx, id, employeeId);
+        
+        // Prepare catalog items data
+        const catalogItems = csvData.map(row => ({
+          catalog_id: id,
+          target_id: row.target_id || null,
+          diagram_serial_number: row.diagram_serial_number || null,
+          part_number: row.part_number || null,
+          catalog_item_name_en: row.catalog_item_name_en || null,
+          catalog_item_name_ch: row.catalog_item_name_ch || null,
+          catalog_item_quantity: row.catalog_item_quantity ? parseInt(row.catalog_item_quantity) : 0,
+          catalog_item_description: row.catalog_item_description || null,
+          created_by: employeeId
+        }));
+        
+        // Insert catalog items baru dengan transaction
+        await repository.createCatalogItemsWithTransaction(trx, catalogItems);
+        
+      } catch (csvError) {
+        console.error('Error processing CSV:', csvError);
+        await trx.rollback();
+        return errorResponse(res, { 
+          message: 'Error saat memproses file CSV',
+          error: csvError.message
+        }, 500);
+      }
+    }
+    
+    // Commit transaction jika semua berhasil
+    await trx.commit();
     
     return baseResponse(res, { 
       data,
       message: 'Data katalog berhasil diupdate' 
     });
   } catch (error) {
+    // Rollback jika ada error
+    await trx.rollback();
     return errorResponse(res, error);
   }
 };

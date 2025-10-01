@@ -9,7 +9,7 @@ const {
 } = require('./validation');
 const { verifyToken } = require('../../middlewares/token');
 const { validateMiddleware } = require('../../middlewares/validation');
-const { handleImageUpload } = require('../../middlewares/fileUpload');
+const { handleCatalogUpload } = require('../../middlewares/fileUpload');
 
 /**
  * @route   POST /api/catalogs/get
@@ -58,7 +58,7 @@ router.get(
 router.post(
   '/create',
   verifyToken,
-  handleImageUpload,
+  handleCatalogUpload,
   createValidation,
   validateMiddleware,
   handler.create
@@ -72,7 +72,7 @@ router.post(
 router.put(
   '/:id',
   verifyToken,
-  handleImageUpload,
+  handleCatalogUpload,
   updateValidation,
   validateMiddleware,
   handler.update

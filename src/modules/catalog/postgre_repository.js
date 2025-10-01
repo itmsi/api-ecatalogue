@@ -124,10 +124,38 @@ const create = async (data) => {
 };
 
 /**
+ * Create new item with transaction
+ */
+const createWithTransaction = async (trx, data) => {
+  const [result] = await trx(TABLE_NAME)
+    .insert({
+      ...data,
+      created_at: db.fn.now(),
+      updated_at: db.fn.now()
+    })
+    .returning('*');
+  return result;
+};
+
+/**
  * Update existing item
  */
 const update = async (id, data) => {
   const [result] = await db(TABLE_NAME)
+    .where({ catalog_id: id, deleted_at: null })
+    .update({
+      ...data,
+      updated_at: db.fn.now()
+    })
+    .returning('*');
+  return result;
+};
+
+/**
+ * Update existing item with transaction
+ */
+const updateWithTransaction = async (trx, id, data) => {
+  const [result] = await trx(TABLE_NAME)
     .where({ catalog_id: id, deleted_at: null })
     .update({
       ...data,
@@ -188,15 +216,56 @@ const findChildren = async (parentId) => {
     .orderBy('created_at', 'desc');
 };
 
+/**
+ * Create catalog items with transaction (bulk insert)
+ */
+const createCatalogItemsWithTransaction = async (trx, items) => {
+  if (!items || items.length === 0) {
+    return [];
+  }
+  
+  const itemsWithTimestamp = items.map(item => ({
+    ...item,
+    created_at: db.fn.now(),
+    updated_at: db.fn.now()
+  }));
+  
+  const result = await trx('catalog_items')
+    .insert(itemsWithTimestamp)
+    .returning('*');
+  
+  return result;
+};
+
+/**
+ * Soft delete catalog items by catalog_id with transaction
+ */
+const deleteCatalogItemsByCatalogIdWithTransaction = async (trx, catalogId, deletedBy = null) => {
+  const result = await trx('catalog_items')
+    .where({ catalog_id: catalogId, deleted_at: null })
+    .update({
+      deleted_at: db.fn.now(),
+      deleted_by: deletedBy,
+      is_delete: true
+    })
+    .returning('*');
+  
+  return result;
+};
+
 module.exports = {
   findAll,
   findById,
   findOne,
   create,
+  createWithTransaction,
   update,
+  updateWithTransaction,
   remove,
   restore,
   hardDelete,
-  findChildren
+  findChildren,
+  createCatalogItemsWithTransaction,
+  deleteCatalogItemsByCatalogIdWithTransaction
 };
 

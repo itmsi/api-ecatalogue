@@ -166,6 +166,13 @@ const catalogSchemas = {
         type: 'string',
         description: 'Deskripsi catalog',
         example: 'Complete set of electronic components for Arduino projects'
+      },
+      data_csv: {
+        type: 'string',
+        format: 'binary',
+        nullable: true,
+        description: 'File CSV untuk catalog items - maksimal 10MB. Kolom: target_id, diagram_serial_number, part_number, catalog_item_name_en, catalog_item_name_ch, catalog_item_quantity, catalog_item_description (optional). Optional field.',
+        example: 'catalog-items.csv'
       }
     }
   },
@@ -219,6 +226,13 @@ const catalogSchemas = {
         nullable: true,
         description: 'Deskripsi catalog',
         example: 'Complete set of electronic components for Arduino projects'
+      },
+      data_csv: {
+        type: 'string',
+        format: 'binary',
+        nullable: true,
+        description: 'File CSV untuk catalog items - maksimal 10MB. Kolom: target_id, diagram_serial_number, part_number, catalog_item_name_en, catalog_item_name_ch, catalog_item_quantity, catalog_item_description (optional). Jika diisi, akan menghapus catalog items lama dan menggantinya dengan data baru dari CSV. Optional field.',
+        example: 'catalog-items.csv'
       }
     }
   },

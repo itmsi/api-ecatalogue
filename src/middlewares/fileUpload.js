@@ -161,6 +161,54 @@ const uploadSingleImage = imageUpload.single('catalog_image');
 // Alternative: use fields to handle optional file
 const uploadImageFields = imageUpload.fields([{ name: 'catalog_image', maxCount: 1 }]);
 
+// CSV file filter function
+const csvFileFilter = (req, file, cb) => {
+  // Allow CSV file types
+  const allowedTypes = [
+    'text/csv',
+    'application/vnd.ms-excel',
+    'application/csv',
+    'text/x-csv',
+    'application/x-csv',
+    'text/comma-separated-values',
+    'text/x-comma-separated-values'
+  ];
+
+  // Check file extension as fallback
+  const allowedExtensions = ['.csv'];
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+
+  if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
+    cb(null, true);
+  } else {
+    cb(new Error(`File type not allowed. Only CSV files are allowed.`), false);
+  }
+};
+
+// Configure multer for mixed uploads (image + CSV)
+const mixedUploadStorage = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 2 // catalog_image + data_csv
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === 'catalog_image') {
+      imageFileFilter(req, file, cb);
+    } else if (file.fieldname === 'data_csv') {
+      csvFileFilter(req, file, cb);
+    } else {
+      cb(null, true);
+    }
+  }
+});
+
+// Middleware for catalog with image and CSV
+const uploadCatalogFields = mixedUploadStorage.fields([
+  { name: 'catalog_image', maxCount: 1 },
+  { name: 'data_csv', maxCount: 1 }
+]);
+
 // Middleware wrapper to handle image upload errors
 const handleImageUpload = (req, res, next) => {
   uploadImageFields(req, res, (err) => {
@@ -209,9 +257,53 @@ const handleImageUpload = (req, res, next) => {
   });
 };
 
+// Middleware wrapper to handle catalog upload (image + CSV)
+const handleCatalogUpload = (req, res, next) => {
+  uploadCatalogFields(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File terlalu besar. Maksimal 10MB per file.',
+          error: err.message
+        });
+      }
+      if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Terlalu banyak file.',
+          error: err.message
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Error upload file',
+        error: err.message
+      });
+    } else if (err) {
+      // Handle file validation errors
+      return res.status(400).json({
+        success: false,
+        message: 'Error validasi file',
+        error: err.message
+      });
+    }
+    
+    // Convert req.files to req.file format for catalog_image compatibility
+    if (req.files && req.files.catalog_image && req.files.catalog_image.length > 0) {
+      req.file = req.files.catalog_image[0];
+    }
+    
+    // Keep CSV file in req.files.data_csv for processing
+    
+    next();
+  });
+};
+
 module.exports = {
   handleFileUpload,
   handleImageUpload,
+  handleCatalogUpload,
   generateFileName,
   generateCatalogImageFileName,
   getContentType
