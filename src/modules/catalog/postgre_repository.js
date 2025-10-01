@@ -1,0 +1,206 @@
+const { pgCore: db } = require('../../config/database');
+
+const TABLE_NAME = 'catalogs';
+
+/**
+ * Find all items with pagination
+ */
+const findAll = async (page = 1, limit = 10, filters = {}) => {
+  const offset = (page - 1) * limit;
+  
+  let query = db(TABLE_NAME)
+    .select(
+      'catalogs.*',
+      'categories.category_name_en',
+      'categories.category_name_ch',
+      db.raw('parent.catalog_name_en as parent_catalog_name')
+    )
+    .leftJoin('categories', function() {
+      this.on('catalogs.category_id', '=', 'categories.category_id')
+        .andOnNull('categories.deleted_at')
+        .andOn('categories.is_delete', '=', db.raw('false'));
+    })
+    .leftJoin('catalogs as parent', function() {
+      this.on('catalogs.catalog_parent_id', '=', 'parent.catalog_id')
+        .andOnNull('parent.deleted_at')
+        .andOn('parent.is_delete', '=', db.raw('false'));
+    })
+    .where({ 'catalogs.deleted_at': null });
+
+  // Apply filters if provided
+  if (filters.category_id) {
+    query = query.where({ 'catalogs.category_id': filters.category_id });
+  }
+  if (filters.catalog_parent_id) {
+    query = query.where({ 'catalogs.catalog_parent_id': filters.catalog_parent_id });
+  }
+  if (filters.search) {
+    query = query.where(function() {
+      this.where('catalogs.catalog_name_en', 'ilike', `%${filters.search}%`)
+        .orWhere('catalogs.catalog_name_ch', 'ilike', `%${filters.search}%`)
+        .orWhere('catalogs.part_number', 'ilike', `%${filters.search}%`)
+        .orWhere('catalogs.target_id', 'ilike', `%${filters.search}%`);
+    });
+  }
+    
+  const data = await query
+    .orderBy('catalogs.created_at', 'desc')
+    .limit(limit)
+    .offset(offset);
+    
+  let countQuery = db(TABLE_NAME)
+    .where({ deleted_at: null });
+  
+  if (filters.category_id) {
+    countQuery = countQuery.where({ category_id: filters.category_id });
+  }
+  if (filters.catalog_parent_id) {
+    countQuery = countQuery.where({ catalog_parent_id: filters.catalog_parent_id });
+  }
+  if (filters.search) {
+    countQuery = countQuery.where(function() {
+      this.where('catalog_name_en', 'ilike', `%${filters.search}%`)
+        .orWhere('catalog_name_ch', 'ilike', `%${filters.search}%`)
+        .orWhere('part_number', 'ilike', `%${filters.search}%`)
+        .orWhere('target_id', 'ilike', `%${filters.search}%`);
+    });
+  }
+  
+  const total = await countQuery.count('catalog_id as count').first();
+    
+  return {
+    items: data,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: parseInt(total.count),
+      totalPages: Math.ceil(total.count / limit)
+    }
+  };
+};
+
+/**
+ * Find single item by ID
+ */
+const findById = async (id) => {
+  return await db(TABLE_NAME)
+    .select(
+      'catalogs.*',
+      'categories.category_name_en',
+      'categories.category_name_ch',
+      db.raw('parent.catalog_name_en as parent_catalog_name')
+    )
+    .leftJoin('categories', function() {
+      this.on('catalogs.category_id', '=', 'categories.category_id')
+        .andOnNull('categories.deleted_at')
+        .andOn('categories.is_delete', '=', db.raw('false'));
+    })
+    .leftJoin('catalogs as parent', function() {
+      this.on('catalogs.catalog_parent_id', '=', 'parent.catalog_id')
+        .andOnNull('parent.deleted_at')
+        .andOn('parent.is_delete', '=', db.raw('false'));
+    })
+    .where({ 'catalogs.catalog_id': id, 'catalogs.deleted_at': null })
+    .first();
+};
+
+/**
+ * Find by custom condition
+ */
+const findOne = async (conditions) => {
+  return await db(TABLE_NAME)
+    .where({ ...conditions, deleted_at: null })
+    .first();
+};
+
+/**
+ * Create new item
+ */
+const create = async (data) => {
+  const [result] = await db(TABLE_NAME)
+    .insert({
+      ...data,
+      created_at: db.fn.now(),
+      updated_at: db.fn.now()
+    })
+    .returning('*');
+  return result;
+};
+
+/**
+ * Update existing item
+ */
+const update = async (id, data) => {
+  const [result] = await db(TABLE_NAME)
+    .where({ catalog_id: id, deleted_at: null })
+    .update({
+      ...data,
+      updated_at: db.fn.now()
+    })
+    .returning('*');
+  return result;
+};
+
+/**
+ * Soft delete item
+ */
+const remove = async (id, deletedBy = null) => {
+  const [result] = await db(TABLE_NAME)
+    .where({ catalog_id: id, deleted_at: null })
+    .update({
+      deleted_at: db.fn.now(),
+      deleted_by: deletedBy,
+      is_delete: true
+    })
+    .returning('*');
+  return result;
+};
+
+/**
+ * Restore soft deleted item
+ */
+const restore = async (id, updatedBy = null) => {
+  const [result] = await db(TABLE_NAME)
+    .where({ catalog_id: id })
+    .whereNotNull('deleted_at')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+      is_delete: false,
+      updated_at: db.fn.now(),
+      updated_by: updatedBy
+    })
+    .returning('*');
+  return result;
+};
+
+/**
+ * Hard delete item (permanent)
+ */
+const hardDelete = async (id) => {
+  return await db(TABLE_NAME)
+    .where({ catalog_id: id })
+    .del();
+};
+
+/**
+ * Get child catalogs
+ */
+const findChildren = async (parentId) => {
+  return await db(TABLE_NAME)
+    .where({ catalog_parent_id: parentId, deleted_at: null })
+    .orderBy('created_at', 'desc');
+};
+
+module.exports = {
+  findAll,
+  findById,
+  findOne,
+  create,
+  update,
+  remove,
+  restore,
+  hardDelete,
+  findChildren
+};
+

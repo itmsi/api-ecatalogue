@@ -26,16 +26,19 @@ const servers = [
 // Tambahkan schema module Anda di sini
 const exampleSchema = require('./schema/example');
 const categorySchema = require('./schema/category');
+const catalogSchema = require('./schema/catalog');
 
 // Import paths
 // Tambahkan path module Anda di sini
 const examplePaths = require('./path/example');
 const categoryPaths = require('./path/category');
+const catalogPaths = require('./path/catalog');
 
 // Combine all schemas
 const schemas = {
   ...exampleSchema,
   ...categorySchema,
+  ...catalogSchema,
   // ...yourModuleSchema,
 };
 
@@ -43,6 +46,7 @@ const schemas = {
 const paths = {
   ...examplePaths,
   ...categoryPaths,
+  ...catalogPaths,
   // ...yourModulePaths,
 };
 
