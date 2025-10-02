@@ -50,6 +50,10 @@ routing.use(`${API_TAG}/brands`, brandsModule)
 const worldManufacturingPlantModule = require('../../modules/worldManufacturingPlant')
 routing.use(`${API_TAG}/world_manufacturing_plants`, worldManufacturingPlantModule)
 
+// Production Module
+const productionModule = require('../../modules/production')
+routing.use(`${API_TAG}/productions`, productionModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')
