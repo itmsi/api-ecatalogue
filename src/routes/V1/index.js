@@ -38,6 +38,10 @@ routing.use(`${API_TAG}/locations`, locationsModule)
 const driverTypesModule = require('../../modules/driverTypes')
 routing.use(`${API_TAG}/driver_types`, driverTypesModule)
 
+// Vehicle Weight Module
+const vehicleWeightModule = require('../../modules/vehicleWeight')
+routing.use(`${API_TAG}/vehicle_weights`, vehicleWeightModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')

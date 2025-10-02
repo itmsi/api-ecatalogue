@@ -30,6 +30,7 @@ const catalogSchema = require('./schema/catalog');
 const catalogItemsSchema = require('./schema/catalogItems');
 const locationsSchema = require('./schema/locations');
 const driverTypesSchema = require('./schema/driverTypes');
+const vehicleWeightsSchema = require('./schema/vehicleWeight');
 
 // Import paths
 // Tambahkan path module Anda di sini
@@ -39,6 +40,7 @@ const catalogPaths = require('./path/catalog');
 const catalogItemsPaths = require('./path/catalogItems');
 const locationsPaths = require('./path/locations');
 const driverTypesPaths = require('./path/driverTypes');
+const vehicleWeightsPaths = require('./path/vehicleWeight');
 // Combine all schemas
 const schemas = {
   ...exampleSchema,
@@ -47,6 +49,7 @@ const schemas = {
   ...catalogItemsSchema,
   ...locationsSchema,
   ...driverTypesSchema,
+  ...vehicleWeightsSchema,
   // ...yourModuleSchema,
 };
 
@@ -58,6 +61,7 @@ const paths = {
   ...catalogItemsPaths,
   ...locationsPaths,
   ...driverTypesPaths,
+  ...vehicleWeightsPaths,
   // ...yourModulePaths,
 };
 
