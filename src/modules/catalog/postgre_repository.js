@@ -79,7 +79,8 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
  * Find single item by ID
  */
 const findById = async (id) => {
-  return await db(TABLE_NAME)
+  // Get catalog data
+  const catalog = await db(TABLE_NAME)
     .select(
       'catalogs.*',
       'categories.category_name_en',
@@ -98,6 +99,36 @@ const findById = async (id) => {
     })
     .where({ 'catalogs.catalog_id': id, 'catalogs.deleted_at': null })
     .first();
+
+  if (!catalog) {
+    return null;
+  }
+
+  // Get catalog items
+  const catalogItems = await db('catalog_items')
+    .select([
+      'catalog_item_id',
+      'catalog_id',
+      'target_id',
+      'diagram_serial_number',
+      'part_number',
+      'catalog_item_name_en',
+      'catalog_item_name_ch',
+      'catalog_item_quantity',
+      'catalog_item_description'
+    ])
+    .where({ 
+      'catalog_id': id, 
+      'deleted_at': null,
+      'is_delete': false
+    })
+    .orderBy('created_at', 'asc');
+
+  // Combine catalog and catalog_items
+  return {
+    ...catalog,
+    catalog_items: catalogItems
+  };
 };
 
 /**
