@@ -9,6 +9,11 @@ const createValidation = [
     .isLength({ max: 255 })
     .withMessage('Nama lokasi maksimal 255 karakter')
     .trim(),
+  body('location_code')
+    .optional()
+    .isLength({ max: 255 })
+    .withMessage('Kode lokasi maksimal 255 karakter')
+    .trim(),
   body('location_description')
     .optional()
     .isLength({ max: 1000 })
@@ -29,6 +34,11 @@ const updateValidation = [
     .optional()
     .isLength({ max: 255 })
     .withMessage('Nama lokasi maksimal 255 karakter')
+    .trim(),
+  body('location_code')
+    .optional()
+    .isLength({ max: 255 })
+    .withMessage('Kode lokasi maksimal 255 karakter')
     .trim(),
   body('location_description')
     .optional()

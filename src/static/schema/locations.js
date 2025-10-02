@@ -18,6 +18,12 @@ const locationsSchemas = {
         description: 'Name of the location',
         example: 'Jakarta Pusat'
       },
+      location_code: {
+        type: 'string',
+        nullable: true,
+        description: 'Code of the location',
+        example: 'JKT_PST'
+      },
       location_description: {
         type: 'string',
         nullable: true,
@@ -77,6 +83,12 @@ const locationsSchemas = {
         description: 'Name of the location',
         example: 'Jakarta Pusat'
       },
+      location_code: {
+        type: 'string',
+        maxLength: 255,
+        description: 'Code of the location',
+        example: 'JKT_PST'
+      },
       location_description: {
         type: 'string',
         maxLength: 1000,
@@ -108,7 +120,7 @@ const locationsSchemas = {
       },
       sort_by: {
         type: 'string',
-        enum: ['location_id', 'location_name', 'created_at', 'updated_at'],
+        enum: ['location_id', 'location_name', 'location_code', 'created_at', 'updated_at'],
         description: 'Column to sort by',
         example: 'created_at'
       },

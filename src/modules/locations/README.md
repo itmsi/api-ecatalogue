@@ -21,6 +21,7 @@ Semua endpoints memerlukan autentikasi JWT token (Bearer token).
 |--------|------|-------------|
 | location_id | UUID | Primary key |
 | location_name | VARCHAR(255) | Nama lokasi (nullable) |
+| location_code | VARCHAR(255) | Kode lokasi (nullable) |
 | location_description | TEXT | Deskripsi lokasi (nullable) |
 | created_at | TIMESTAMP | Waktu pembuatan |
 | created_by | VARCHAR(255) | User yang membuat (nullable) |
@@ -34,6 +35,7 @@ Semua endpoints memerlukan autentikasi JWT token (Bearer token).
 
 ### Create/Update Location
 - `location_name`: Maksimal 255 karakter (optional)
+- `location_code`: Maksimal 255 karakter (optional)
 - `location_description`: Maksimal 1000 karakter (optional)
 
 **Note**: `created_by`, `updated_by`, dan `deleted_by` akan diisi otomatis dari JWT token yang dikirimkan.
@@ -44,8 +46,8 @@ Semua endpoints memerlukan autentikasi JWT token (Bearer token).
 ### Pagination & Filtering
 - `page`: Harus berupa angka positif (default: 1)
 - `limit`: Harus antara 1-100 (default: 10)
-- `search`: String untuk pencarian di kolom location_name dan location_description (optional)
-- `sort_by`: Kolom untuk sorting - location_id, location_name, created_at, updated_at (default: created_at)
+- `search`: String untuk pencarian di kolom location_name, location_code dan location_description (optional)
+- `sort_by`: Kolom untuk sorting - location_id, location_name, location_code, created_at, updated_at (default: created_at)
 - `sort_order`: Urutan sorting - asc atau desc (default: desc)
 
 ## Response Format
@@ -90,6 +92,7 @@ curl -X POST http://localhost:9549/api/catalogs/locations/create \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
     "location_name": "Jakarta Pusat",
+    "location_code": "JKT_PST",
     "location_description": "Kantor pusat di Jakarta Pusat"
   }'
 ```

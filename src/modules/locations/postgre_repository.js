@@ -10,8 +10,8 @@ const findAll = async (page = 1, limit = 10, sortBy = 'created_at', sortOrder = 
   const offset = (page - 1) * limit;
   
   // Config untuk sorting dan search
-  const allowedSortColumns = ['location_id', 'location_name', 'created_at', 'updated_at'];
-  const searchableColumns = ['location_name', 'location_description'];
+  const allowedSortColumns = ['location_id', 'location_name', 'location_code', 'created_at', 'updated_at'];
+  const searchableColumns = ['location_name', 'location_code', 'location_description'];
   
   // Parse sorting dengan validasi
   const sorting = {
