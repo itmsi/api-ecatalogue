@@ -30,6 +30,14 @@ routing.use(`${API_TAG}/catalogs`, catalogModule)
 const catalogItemsModule = require('../../modules/catalogItems')
 routing.use(`${API_TAG}/catalogItems`, catalogItemsModule)
 
+// Locations Module
+const locationsModule = require('../../modules/locations')
+routing.use(`${API_TAG}/locations`, locationsModule)
+
+// Driver Types Module
+const driverTypesModule = require('../../modules/driverTypes')
+routing.use(`${API_TAG}/driver_types`, driverTypesModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')
