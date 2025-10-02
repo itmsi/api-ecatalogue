@@ -43,6 +43,11 @@ const validateCsvRow = (row, rowIndex) => {
     errors.push(`Baris ${rowIndex + 1}: catalog_item_quantity harus berupa angka`);
   }
   
+  // Validasi target_id tidak boleh kosong
+  if (!row.target_id || row.target_id.trim() === '') {
+    errors.push(`Baris ${rowIndex + 1}: target_id tidak boleh kosong`);
+  }
+  
   return errors;
 };
 
@@ -323,13 +328,17 @@ const update = async (req, res) => {
       return errorResponse(res, { message: 'Data katalog tidak ditemukan' }, 404);
     }
     
+    // Variables untuk CSV processing results
+    let csvData = [];
+    let upsertResults = [];
+    
     // Process CSV file jika ada
     if (req.files && req.files.data_csv && req.files.data_csv.length > 0) {
       const csvFile = req.files.data_csv[0];
       
       try {
         // Parse CSV
-        const csvData = await parseCsvFile(csvFile.buffer);
+        csvData = await parseCsvFile(csvFile.buffer);
         
         if (csvData.length === 0) {
           await trx.rollback();
@@ -353,9 +362,6 @@ const update = async (req, res) => {
           }, 400);
         }
         
-        // Hapus catalog items lama terlebih dahulu (soft delete)
-        await repository.deleteCatalogItemsByCatalogIdWithTransaction(trx, id, employeeId);
-        
         // Prepare catalog items data
         const catalogItems = csvData.map(row => ({
           catalog_id: id,
@@ -365,12 +371,16 @@ const update = async (req, res) => {
           catalog_item_name_en: row.catalog_item_name_en || null,
           catalog_item_name_ch: row.catalog_item_name_ch || null,
           catalog_item_quantity: row.catalog_item_quantity ? parseInt(row.catalog_item_quantity) : 0,
-          catalog_item_description: row.catalog_item_description || null,
-          created_by: employeeId
+          catalog_item_description: row.catalog_item_description || null
         }));
         
-        // Insert catalog items baru dengan transaction
-        await repository.createCatalogItemsWithTransaction(trx, catalogItems);
+        // Upsert catalog items (update if exists, insert if not)
+        upsertResults = await repository.upsertCatalogItemsWithTransaction(trx, catalogItems, employeeId);
+        
+        // Log hasil upsert
+        const insertedCount = upsertResults.filter(r => r.action === 'inserted').length;
+        const updatedCount = upsertResults.filter(r => r.action === 'updated').length;
+        console.log(`CSV Import Results: ${insertedCount} inserted, ${updatedCount} updated`);
         
       } catch (csvError) {
         console.error('Error processing CSV:', csvError);
@@ -385,8 +395,24 @@ const update = async (req, res) => {
     // Commit transaction jika semua berhasil
     await trx.commit();
     
+    // Prepare response data
+    const responseData = { ...data };
+    
+    // Add CSV import results if CSV was processed
+    if (req.files && req.files.data_csv && req.files.data_csv.length > 0) {
+      const insertedCount = upsertResults.filter(r => r.action === 'inserted').length;
+      const updatedCount = upsertResults.filter(r => r.action === 'updated').length;
+      
+      responseData.csv_import_results = {
+        total_processed: csvData.length,
+        inserted: insertedCount,
+        updated: updatedCount,
+        message: `CSV berhasil diproses: ${insertedCount} data baru, ${updatedCount} data diupdate`
+      };
+    }
+    
     return baseResponse(res, { 
-      data,
+      data: responseData,
       message: 'Data katalog berhasil diupdate' 
     });
   } catch (error) {

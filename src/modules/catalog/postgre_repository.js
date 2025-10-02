@@ -253,6 +253,60 @@ const deleteCatalogItemsByCatalogIdWithTransaction = async (trx, catalogId, dele
   return result;
 };
 
+/**
+ * Upsert catalog items with transaction (update if exists, insert if not)
+ * Using PostgreSQL ON CONFLICT for better performance
+ */
+const upsertCatalogItemsWithTransaction = async (trx, items, employeeId) => {
+  if (!items || items.length === 0) {
+    return [];
+  }
+  
+  const results = [];
+  
+  for (const item of items) {
+    try {
+      // Use PostgreSQL UPSERT (INSERT ... ON CONFLICT ... DO UPDATE)
+      const [result] = await trx('catalog_items')
+        .insert({
+          catalog_id: item.catalog_id,
+          target_id: item.target_id,
+          diagram_serial_number: item.diagram_serial_number,
+          part_number: item.part_number,
+          catalog_item_name_en: item.catalog_item_name_en,
+          catalog_item_name_ch: item.catalog_item_name_ch,
+          catalog_item_quantity: item.catalog_item_quantity,
+          catalog_item_description: item.catalog_item_description,
+          created_at: db.fn.now(),
+          updated_at: db.fn.now(),
+          created_by: employeeId
+        })
+        .onConflict(['catalog_id', 'target_id'])
+        .merge({
+          diagram_serial_number: item.diagram_serial_number,
+          part_number: item.part_number,
+          catalog_item_name_en: item.catalog_item_name_en,
+          catalog_item_name_ch: item.catalog_item_name_ch,
+          catalog_item_quantity: item.catalog_item_quantity,
+          catalog_item_description: item.catalog_item_description,
+          updated_at: db.fn.now(),
+          updated_by: employeeId
+        })
+        .returning('*');
+      
+      // Check if this was an insert or update by comparing created_at and updated_at
+      const isUpdate = result.created_at !== result.updated_at;
+      results.push({ ...result, action: isUpdate ? 'updated' : 'inserted' });
+      
+    } catch (error) {
+      console.error('Error upserting catalog item:', error);
+      throw error;
+    }
+  }
+  
+  return results;
+};
+
 module.exports = {
   findAll,
   findById,
@@ -266,6 +320,7 @@ module.exports = {
   hardDelete,
   findChildren,
   createCatalogItemsWithTransaction,
-  deleteCatalogItemsByCatalogIdWithTransaction
+  deleteCatalogItemsByCatalogIdWithTransaction,
+  upsertCatalogItemsWithTransaction
 };
 

@@ -1,0 +1,6 @@
+target_id,diagram_serial_number,part_number,catalog_item_name_en,catalog_item_name_ch,catalog_item_quantity,catalog_item_description
+TGT001,DS-2024-001,PN-12345,Resistor 10K,电阻 10K,100,10K Ohm resistor for Arduino
+TGT002,DS-2024-002,PN-12346,LED Red,红色 LED,50,5mm red LED
+TGT003,DS-2024-003,PN-12347,Capacitor 100uF,电容 100uF,75,100uF electrolytic capacitor
+TGT004,DS-2024-004,PN-12348,Transistor NPN,晶体管 NPN,25,2N3904 NPN transistor
+TGT005,DS-2024-005,PN-12349,Arduino Uno,Arduino Uno,10,Arduino Uno R3 development board
