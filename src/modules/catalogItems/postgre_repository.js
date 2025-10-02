@@ -231,6 +231,146 @@ const importFromCsv = async (filePath) => {
 };
 
 /**
+ * Import catalog items from CSV file with upsert logic
+ */
+const importFromCsvWithUpsert = async (filePath, catalogId, employeeId) => {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    let imported = 0;
+    let updated = 0;
+    let errors = [];
+
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => {
+        results.push(data);
+      })
+      .on('end', async () => {
+        try {
+          // Process each row
+          for (const row of results) {
+            try {
+              // Validasi kolom yang diperlukan
+              if (!row.target_id || row.target_id.trim() === '') {
+                errors.push(`Target ID tidak boleh kosong pada baris ${results.indexOf(row) + 1}`);
+                continue;
+              }
+
+              // Map CSV columns to database fields
+              const catalogItemData = {
+                catalog_id: catalogId,
+                target_id: row.target_id || null,
+                diagram_serial_number: row.diagram_serial_number || null,
+                part_number: row.part_number || null,
+                catalog_item_name_en: row.catalog_item_name_en || null,
+                catalog_item_name_ch: row.catalog_item_name_ch || null,
+                catalog_item_quantity: parseInt(row.catalog_item_quantity) || 0,
+                catalog_item_description: row.catalog_item_description || null
+              };
+
+              // Try to insert first, if duplicate then update
+              try {
+                const insertData = {
+                  ...catalogItemData,
+                  created_by: employeeId,
+                  created_at: db.fn.now(),
+                  updated_at: db.fn.now()
+                };
+                
+                await db(TABLE_NAME).insert(insertData);
+                imported++;
+              } catch (insertError) {
+                // If unique constraint violation, update the existing record
+                if (insertError.code === '23505' && insertError.constraint === 'unique_catalog_target') {
+                  const existingRecord = await findOne({ 
+                    catalog_id: catalogId, 
+                    target_id: catalogItemData.target_id 
+                  });
+                  
+                  if (existingRecord) {
+                    const updateData = {
+                      ...catalogItemData,
+                      updated_by: employeeId,
+                      updated_at: db.fn.now()
+                    };
+                    
+                    await db(TABLE_NAME)
+                      .where({ 
+                        catalog_item_id: existingRecord.catalog_item_id,
+                        deleted_at: null 
+                      })
+                      .update(updateData);
+                    
+                    updated++;
+                  } else {
+                    // If record not found but constraint violation, it might be soft deleted
+                    // Try to find including soft deleted records
+                    const softDeletedRecord = await db(TABLE_NAME)
+                      .where({ 
+                        catalog_id: catalogId, 
+                        target_id: catalogItemData.target_id 
+                      })
+                      .first();
+                    
+                    if (softDeletedRecord) {
+                      // Restore and update the soft deleted record
+                      const updateData = {
+                        ...catalogItemData,
+                        deleted_at: null,
+                        is_delete: false,
+                        updated_by: employeeId,
+                        updated_at: db.fn.now()
+                      };
+                      
+                      await db(TABLE_NAME)
+                        .where({ catalog_item_id: softDeletedRecord.catalog_item_id })
+                        .update(updateData);
+                      
+                      updated++;
+                    } else {
+                      errors.push(`Error processing row ${results.indexOf(row) + 1}: Record not found for update`);
+                    }
+                  }
+                } else {
+                  errors.push(`Error processing row ${results.indexOf(row) + 1}: ${insertError.message}`);
+                }
+              }
+            } catch (error) {
+              errors.push(`Error processing row ${results.indexOf(row) + 1}: ${error.message}`);
+            }
+          }
+
+          // Clean up file
+          fs.unlinkSync(filePath);
+
+          resolve({
+            imported,
+            updated,
+            errors,
+            total: results.length
+          });
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on('error', (error) => {
+        reject(error);
+      });
+  });
+};
+
+/**
+ * Validate if catalog exists
+ */
+const validateCatalogExists = async (catalogId) => {
+  const catalog = await db('catalogs')
+    .where({ catalog_id: catalogId, deleted_at: null })
+    .first();
+  
+  return !!catalog;
+};
+
+/**
  * Bulk create catalog items
  */
 const bulkCreate = async (items) => {
@@ -256,5 +396,7 @@ module.exports = {
   restore,
   hardDelete,
   importFromCsv,
+  importFromCsvWithUpsert,
+  validateCatalogExists,
   bulkCreate
 };

@@ -229,8 +229,13 @@ const catalogItemsSchemas = {
         properties: {
           imported: {
             type: 'integer',
-            description: 'Number of successfully imported items',
-            example: 5
+            description: 'Number of successfully imported new items',
+            example: 3
+          },
+          updated: {
+            type: 'integer',
+            description: 'Number of successfully updated existing items',
+            example: 2
           },
           errors: {
             type: 'array',

@@ -131,6 +131,21 @@ const importCsv = async (req, res) => {
       return errorResponse(res, { message: 'File CSV wajib diupload' }, 400);
     }
 
+    // Validasi parameter catalog_id
+    const { catalog_id } = req.body;
+    if (!catalog_id || catalog_id.trim() === '') {
+      return errorResponse(res, { message: 'Parameter catalog_id wajib diisi' }, 400);
+    }
+
+    // Validasi catalog_id exists di tabel catalogs
+    const catalogExists = await repository.validateCatalogExists(catalog_id);
+    if (!catalogExists) {
+      return errorResponse(res, { message: 'Catalog ID tidak ditemukan di tabel catalogs' }, 400);
+    }
+
+    // Auto-fill created_by dari token (jika ada)
+    const employeeId = req.user?.employee_id || req.user?.user_id || null;
+
     // Since we're using memory storage, we need to write the file to temp directory first
     const fs = require('fs');
     const path = require('path');
@@ -144,10 +159,10 @@ const importCsv = async (req, res) => {
     const tempFilePath = path.join(tempDir, `${uuidv4()}.csv`);
     fs.writeFileSync(tempFilePath, req.file.buffer);
 
-    const data = await repository.importFromCsv(tempFilePath);
+    const data = await repository.importFromCsvWithUpsert(tempFilePath, catalog_id, employeeId);
     return baseResponse(res, { 
       data,
-      message: `Berhasil mengimport ${data.imported} data dari CSV` 
+      message: `Berhasil mengimport ${data.imported} data baru dan mengupdate ${data.updated} data dari CSV` 
     });
   } catch (error) {
     return errorResponse(res, error);

@@ -286,7 +286,7 @@ const catalogItemsPaths = {
     post: {
       tags: ['Catalog Items'],
       summary: 'Import catalog items from CSV',
-      description: 'Import multiple catalog items from CSV file',
+      description: 'Import multiple catalog items from CSV file with upsert logic. If catalog_id and target_id combination already exists, it will update the record. Otherwise, it will insert a new record.',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -295,13 +295,18 @@ const catalogItemsPaths = {
             schema: {
               type: 'object',
               properties: {
+                catalog_id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Catalog ID to associate the imported items with'
+                },
                 file: {
                   type: 'string',
                   format: 'binary',
-                  description: 'CSV file containing catalog items data'
+                  description: 'CSV file containing catalog items data. Required columns: target_id, diagram_serial_number, part_number, catalog_item_name_en, catalog_item_name_ch, catalog_item_quantity, catalog_item_description (optional)'
                 }
               },
-              required: ['file']
+              required: ['catalog_id', 'file']
             }
           }
         }

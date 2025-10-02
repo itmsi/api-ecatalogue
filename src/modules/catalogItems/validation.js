@@ -148,6 +148,11 @@ const listValidation = [
  * Validation rules for CSV import
  */
 const importCsvValidation = [
+  body('catalog_id')
+    .notEmpty()
+    .withMessage('Catalog ID wajib diisi')
+    .isUUID()
+    .withMessage('Catalog ID harus berupa UUID yang valid'),
   // File validation will be handled by multer middleware
 ];
 
