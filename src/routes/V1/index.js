@@ -46,6 +46,10 @@ routing.use(`${API_TAG}/vehicle_weights`, vehicleWeightModule)
 const brandsModule = require('../../modules/brands')
 routing.use(`${API_TAG}/brands`, brandsModule)
 
+// World Manufacturing Plants Module
+const worldManufacturingPlantModule = require('../../modules/worldManufacturingPlant')
+routing.use(`${API_TAG}/world_manufacturing_plants`, worldManufacturingPlantModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')

@@ -32,6 +32,7 @@ const locationsSchema = require('./schema/locations');
 const driverTypesSchema = require('./schema/driverTypes');
 const vehicleWeightsSchema = require('./schema/vehicleWeight');
 const brandsSchema = require('./schema/brands');
+const worldManufacturingPlantSchema = require('./schema/worldManufacturingPlant');
 
 // Import paths
 // Tambahkan path module Anda di sini
@@ -43,6 +44,7 @@ const locationsPaths = require('./path/locations');
 const driverTypesPaths = require('./path/driverTypes');
 const vehicleWeightsPaths = require('./path/vehicleWeight');
 const brandsPaths = require('./path/brands');
+const worldManufacturingPlantPaths = require('./path/worldManufacturingPlant');
 // Combine all schemas
 const schemas = {
   ...exampleSchema,
@@ -53,6 +55,7 @@ const schemas = {
   ...driverTypesSchema,
   ...vehicleWeightsSchema,
   ...brandsSchema,
+  ...worldManufacturingPlantSchema,
   // ...yourModuleSchema,
 };
 
@@ -66,6 +69,7 @@ const paths = {
   ...driverTypesPaths,
   ...vehicleWeightsPaths,
   ...brandsPaths,
+  ...worldManufacturingPlantPaths,
   // ...yourModulePaths,
 };
 
