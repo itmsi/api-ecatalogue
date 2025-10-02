@@ -26,6 +26,10 @@ routing.use(`${API_TAG}/categories`, categoryModule)
 const catalogModule = require('../../modules/catalog')
 routing.use(`${API_TAG}/catalogs`, catalogModule)
 
+// Catalog Items Module
+const catalogItemsModule = require('../../modules/catalogItems')
+routing.use(`${API_TAG}/catalogItems`, catalogItemsModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')
