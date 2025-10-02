@@ -44,6 +44,31 @@ const catalogSchemas = {
         description: 'Nama parent catalog (dari join table)',
         example: 'Main Catalog'
       },
+      production_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Foreign key ke tabel productions',
+        example: '123e4567-e89b-12d3-a456-426614174003'
+      },
+      production_name_en: {
+        type: 'string',
+        nullable: true,
+        description: 'Nama production dalam bahasa Inggris (dari join table)',
+        example: 'Production Line A'
+      },
+      production_name_cn: {
+        type: 'string',
+        nullable: true,
+        description: 'Nama production dalam bahasa China (dari join table)',
+        example: '生产线A'
+      },
+      vin_number: {
+        type: 'string',
+        nullable: true,
+        description: 'VIN number (dari join table)',
+        example: 'VIN123456789'
+      },
       catalog_name_en: {
         type: 'string',
         nullable: true,
@@ -134,8 +159,16 @@ const catalogSchemas = {
       catalog_parent_id: {
         type: 'string',
         format: 'uuid',
+        nullable: true,
         description: 'Foreign key ke parent catalog',
         example: '123e4567-e89b-12d3-a456-426614174002'
+      },
+      production_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Foreign key ke tabel productions',
+        example: '123e4567-e89b-12d3-a456-426614174003'
       },
       catalog_name_en: {
         type: 'string',
@@ -192,6 +225,13 @@ const catalogSchemas = {
         nullable: true,
         description: 'Foreign key ke parent catalog',
         example: '123e4567-e89b-12d3-a456-426614174002'
+      },
+      production_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Foreign key ke tabel productions',
+        example: '123e4567-e89b-12d3-a456-426614174003'
       },
       catalog_name_en: {
         type: 'string',
@@ -253,6 +293,27 @@ const catalogSchemas = {
         default: 10,
         description: 'Items per page (max 100)',
         example: 10
+      },
+      category_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Filter berdasarkan category_id',
+        example: '123e4567-e89b-12d3-a456-426614174001'
+      },
+      catalog_parent_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Filter berdasarkan catalog_parent_id',
+        example: '123e4567-e89b-12d3-a456-426614174002'
+      },
+      production_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Filter berdasarkan production_id',
+        example: '123e4567-e89b-12d3-a456-426614174003'
       },
       search: {
         type: 'string',

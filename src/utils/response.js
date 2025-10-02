@@ -26,13 +26,22 @@ const baseResponse = (res, data = null, statusCode = 200) => {
  */
 const errorResponse = (res, error, statusCode = null, errors = null) => {
   // Handle if error is an object with message property
-  const message = typeof error === 'object' && error?.message 
+  let message = typeof error === 'object' && error?.message 
     ? error.message 
     : typeof error === 'string' 
     ? error 
     : 'Internal Server Error';
   
-  const code = statusCode || error?.statusCode || error?.code || 500;
+  // If it's a database error, provide more helpful message
+  if (typeof error === 'object' && error?.code && typeof error.code === 'number' && error.code >= 40000) {
+    message = `Database error: ${message}. Please contact support if this error persists.`;
+  }
+  
+  // Ensure we only use valid HTTP status codes
+  const errorCode = statusCode || error?.statusCode || error?.code || 500;
+  const code = (typeof errorCode === 'number' && errorCode >= 100 && errorCode < 600) 
+    ? errorCode 
+    : 500;
   
   return res.status(code).json({
     success: false,

@@ -22,6 +22,15 @@ const createValidation = [
       return uuidRegex.test(value);
     })
     .withMessage('Format catalog_parent_id tidak valid'),
+  body('production_id')
+    .optional({ checkFalsy: true })
+    .custom((value) => {
+      if (!value || value === '') return true;
+      // Validasi UUID hanya jika ada nilai
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(value);
+    })
+    .withMessage('Format production_id tidak valid'),
   body('catalog_name_en')
     .optional()
     .isLength({ max: 255 })
@@ -71,6 +80,15 @@ const updateValidation = [
       return uuidRegex.test(value);
     })
     .withMessage('Format catalog_parent_id tidak valid'),
+  body('production_id')
+    .optional({ checkFalsy: true })
+    .custom((value) => {
+      if (!value || value === '') return true;
+      // Validasi UUID hanya jika ada nilai
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(value);
+    })
+    .withMessage('Format production_id tidak valid'),
   body('catalog_name_en')
     .optional()
     .isLength({ max: 255 })
@@ -134,6 +152,15 @@ const listValidation = [
       return uuidRegex.test(value);
     })
     .withMessage('Format catalog_parent_id tidak valid'),
+  body('production_id')
+    .optional({ checkFalsy: true })
+    .custom((value) => {
+      if (!value || value === '') return true;
+      // Validasi UUID hanya jika ada nilai
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(value);
+    })
+    .withMessage('Format production_id tidak valid'),
   body('search')
     .optional()
     .isString()

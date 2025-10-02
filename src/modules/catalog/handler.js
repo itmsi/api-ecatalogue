@@ -61,6 +61,7 @@ const getAll = async (req, res) => {
       limit = 10, 
       category_id, 
       catalog_parent_id, 
+      production_id,
       search,
       sort_by = 'created_at',
       sort_order = 'desc'
@@ -70,6 +71,7 @@ const getAll = async (req, res) => {
     // Hanya tambahkan filter jika ada nilai dan bukan empty string
     if (category_id && category_id.trim() !== '') filters.category_id = category_id;
     if (catalog_parent_id && catalog_parent_id.trim() !== '') filters.catalog_parent_id = catalog_parent_id;
+    if (production_id && production_id.trim() !== '') filters.production_id = production_id;
     if (search && search.trim() !== '') filters.search = search;
     
     const data = await repository.findAll(page, limit, filters);
@@ -157,6 +159,7 @@ const create = async (req, res) => {
     const payload = {
       category_id: req.body.category_id && req.body.category_id.trim() !== '' ? req.body.category_id : null,
       catalog_parent_id: req.body.catalog_parent_id && req.body.catalog_parent_id.trim() !== '' ? req.body.catalog_parent_id : null,
+      production_id: req.body.production_id && req.body.production_id.trim() !== '' ? req.body.production_id : null,
       catalog_name_en: req.body.catalog_name_en || null,
       catalog_name_ch: req.body.catalog_name_ch || null,
       catalog_quantity: req.body.catalog_quantity !== undefined ? parseInt(req.body.catalog_quantity) : null,
@@ -303,6 +306,9 @@ const update = async (req, res) => {
       catalog_parent_id: req.body.catalog_parent_id !== undefined && req.body.catalog_parent_id !== null
         ? (req.body.catalog_parent_id.trim() !== '' ? req.body.catalog_parent_id : null)
         : req.body.catalog_parent_id,
+      production_id: req.body.production_id !== undefined && req.body.production_id !== null
+        ? (req.body.production_id.trim() !== '' ? req.body.production_id : null)
+        : req.body.production_id,
       catalog_name_en: req.body.catalog_name_en || null,
       catalog_name_ch: req.body.catalog_name_ch || null,
       catalog_quantity: req.body.catalog_quantity !== undefined ? parseInt(req.body.catalog_quantity) : null,

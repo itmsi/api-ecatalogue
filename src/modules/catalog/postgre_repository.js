@@ -13,17 +13,26 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
       'catalogs.*',
       'categories.category_name_en',
       'categories.category_name_ch',
-      db.raw('parent.catalog_name_en as parent_catalog_name')
+      db.raw('parent.catalog_name_en as parent_catalog_name'),
+      'productions.production_name_en',
+      'productions.production_name_cn',
+      'productions.vin_number'
+
     )
     .leftJoin('categories', function() {
-      this.on('catalogs.category_id', '=', 'categories.category_id')
-        .andOnNull('categories.deleted_at')
-        .andOn('categories.is_delete', '=', db.raw('false'));
-    })
+        this.on('catalogs.category_id', '=', 'categories.category_id')
+          .andOnNull('categories.deleted_at')
+          .andOn('categories.is_delete', '=', db.raw('false'));
+      })
     .leftJoin('catalogs as parent', function() {
       this.on('catalogs.catalog_parent_id', '=', 'parent.catalog_id')
         .andOnNull('parent.deleted_at')
         .andOn('parent.is_delete', '=', db.raw('false'));
+    })
+    .leftJoin('productions', function() {
+      this.on('catalogs.production_id', '=', 'productions.production_id')
+        .andOnNull('productions.deleted_at')
+        .andOn('productions.is_delete', '=', db.raw('false'));
     })
     .where({ 'catalogs.deleted_at': null });
 
@@ -33,6 +42,9 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
   }
   if (filters.catalog_parent_id) {
     query = query.where({ 'catalogs.catalog_parent_id': filters.catalog_parent_id });
+  }
+  if (filters.production_id) {
+    query = query.where({ 'catalogs.production_id': filters.production_id });
   }
   if (filters.search) {
     query = query.where(function() {
@@ -54,6 +66,9 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
   }
   if (filters.catalog_parent_id) {
     countQuery = countQuery.where({ catalog_parent_id: filters.catalog_parent_id });
+  }
+  if (filters.production_id) {
+    countQuery = countQuery.where({ production_id: filters.production_id });
   }
   if (filters.search) {
     countQuery = countQuery.where(function() {
@@ -85,7 +100,10 @@ const findById = async (id) => {
       'catalogs.*',
       'categories.category_name_en',
       'categories.category_name_ch',
-      db.raw('parent.catalog_name_en as parent_catalog_name')
+      db.raw('parent.catalog_name_en as parent_catalog_name'),
+      'productions.production_name_en',
+      'productions.production_name_cn',
+      'productions.vin_number'
     )
     .leftJoin('categories', function() {
       this.on('catalogs.category_id', '=', 'categories.category_id')
@@ -96,6 +114,11 @@ const findById = async (id) => {
       this.on('catalogs.catalog_parent_id', '=', 'parent.catalog_id')
         .andOnNull('parent.deleted_at')
         .andOn('parent.is_delete', '=', db.raw('false'));
+    })
+    .leftJoin('productions', function() {
+      this.on('catalogs.production_id', '=', 'productions.production_id')
+        .andOnNull('productions.deleted_at')
+        .andOn('productions.is_delete', '=', db.raw('false'));
     })
     .where({ 'catalogs.catalog_id': id, 'catalogs.deleted_at': null })
     .first();
