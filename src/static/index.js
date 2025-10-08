@@ -53,6 +53,8 @@ const cabinesSchema = require('./schema/cabines');
 const typeCabineSchema = require('./schema/typeCabine');
 const typeCabinePaths = require('./path/typeCabine');
 const cabinesPaths = require('./path/cabines');
+const typeEngineSchema = require('./schema/typeEngine');
+const typeEnginePaths = require('./path/typeEngine');
 // Combine all schemas
 const schemas = {
   // ...exampleSchema,
@@ -68,6 +70,7 @@ const schemas = {
   // ...sidebarSchema,
   ...typeCabineSchema,
   ...cabinesSchema,
+  ...typeEngineSchema,
   // ...yourModuleSchema,
 };
 
@@ -86,6 +89,7 @@ const paths = {
   // ...sidebarPaths,
   ...typeCabinePaths,
   ...cabinesPaths,
+  ...typeEnginePaths,
   // ...yourModulePaths,
 };
 
