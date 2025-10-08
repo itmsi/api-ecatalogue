@@ -59,6 +59,8 @@ const enginesSchema = require('./schema/engines');
 const enginesPaths = require('./path/engines');
 const typeTransmissionSchema = require('./schema/typeTransmission');
 const typeTransmissionPaths = require('./path/typeTransmission');
+const transmissionSchema = require('./schema/transmission');
+const transmissionPaths = require('./path/transmission');
 // Combine all schemas
 const schemas = {
   // ...exampleSchema,
@@ -77,6 +79,7 @@ const schemas = {
   ...typeEngineSchema,
   ...enginesSchema,
   ...typeTransmissionSchema,
+  ...transmissionSchema,
   // ...yourModuleSchema,
 };
 
@@ -98,6 +101,7 @@ const paths = {
   ...typeEnginePaths,
   ...enginesPaths,
   ...typeTransmissionPaths,
+  ...transmissionPaths,
   // ...yourModulePaths,
 };
 

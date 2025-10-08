@@ -12,8 +12,8 @@ const { verifyToken } = require('../../middlewares');
 const { validateMiddleware } = require('../../middlewares/validation');
 
 /**
- * @route   POST /api/catalogs/type_transmission/get
- * @desc    Get all type transmissions with pagination and filtering
+ * @route   POST /api/catalogs/transmission/get
+ * @desc    Get all transmissions with pagination and filtering
  * @access  Private
  */
 router.post(
@@ -25,8 +25,8 @@ router.post(
 );
 
 /**
- * @route   GET /api/catalogs/type_transmission/:id
- * @desc    Get type transmission by ID
+ * @route   GET /api/catalogs/transmission/:id
+ * @desc    Get transmission by ID with type_transmissions
  * @access  Private
  */
 router.get(
@@ -38,8 +38,8 @@ router.get(
 );
 
 /**
- * @route   POST /api/catalogs/type_transmission/create
- * @desc    Create new type transmission
+ * @route   POST /api/catalogs/transmission/create
+ * @desc    Create new transmission with type_transmissions
  * @access  Private
  */
 router.post(
@@ -51,8 +51,8 @@ router.post(
 );
 
 /**
- * @route   PUT /api/catalogs/type_transmission/:id
- * @desc    Update type transmission
+ * @route   PUT /api/catalogs/transmission/:id
+ * @desc    Update transmission with type_transmissions
  * @access  Private
  */
 router.put(
@@ -64,8 +64,8 @@ router.put(
 );
 
 /**
- * @route   DELETE /api/catalogs/type_transmission/:id
- * @desc    Soft delete type transmission
+ * @route   DELETE /api/catalogs/transmission/:id
+ * @desc    Soft delete transmission
  * @access  Private
  */
 router.delete(
@@ -77,8 +77,8 @@ router.delete(
 );
 
 /**
- * @route   POST /api/catalogs/type_transmission/:id/restore
- * @desc    Restore soft deleted type transmission
+ * @route   POST /api/catalogs/transmission/:id/restore
+ * @desc    Restore soft deleted transmission
  * @access  Private
  */
 router.post(
