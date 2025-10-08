@@ -82,6 +82,10 @@ routing.use(`${API_TAG}/type_transmission`, typeTransmissionModule)
 const transmissionModule = require('../../modules/transmission')
 routing.use(`${API_TAG}/transmission`, transmissionModule)
 
+// Type Exel Module
+const typeExelModule = require('../../modules/typeExel')
+routing.use(`${API_TAG}/type_exel`, typeExelModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')
