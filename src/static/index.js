@@ -63,6 +63,8 @@ const transmissionSchema = require('./schema/transmission');
 const transmissionPaths = require('./path/transmission');
 const typeAxelSchema = require('./schema/typeAxel');
 const typeAxelPaths = require('./path/typeAxel');
+const axelSchema = require('./schema/axel');
+const axelPaths = require('./path/axel');
 // Combine all schemas
 const schemas = {
   // ...exampleSchema,
@@ -83,6 +85,7 @@ const schemas = {
   ...typeTransmissionSchema,
   ...transmissionSchema,
   ...typeAxelSchema,
+  ...axelSchema,
   // ...yourModuleSchema,
 };
 
@@ -106,6 +109,7 @@ const paths = {
   ...typeTransmissionPaths,
   ...transmissionPaths,
   ...typeAxelPaths,
+  ...axelPaths,
   // ...yourModulePaths,
 };
 
