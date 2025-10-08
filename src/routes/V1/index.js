@@ -94,6 +94,10 @@ routing.use(`${API_TAG}/axel`, axelModule)
 const typeSteeringModule = require('../../modules/typeSteering')
 routing.use(`${API_TAG}/type_steering`, typeSteeringModule)
 
+// Steering Module
+const steeringModule = require('../../modules/steering')
+routing.use(`${API_TAG}/steering`, steeringModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')
