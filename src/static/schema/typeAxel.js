@@ -1,34 +1,34 @@
 /**
- * Swagger Schema Definitions for Type Exel Module
+ * Swagger Schema Definitions for Type Axel Module
  */
 
-const typeExelSchemas = {
-  TypeExel: {
+const typeAxelSchemas = {
+  TypeAxel: {
     type: 'object',
     properties: {
-      type_exel_id: {
+      type_axel_id: {
         type: 'string',
         format: 'uuid',
-        description: 'Unique identifier for type exel',
+        description: 'Unique identifier for type axel',
         example: '123e4567-e89b-12d3-a456-426614174000'
       },
-      type_exel_name_en: {
+      type_axel_name_en: {
         type: 'string',
         nullable: true,
-        description: 'Type exel name in English',
+        description: 'Type axel name in English',
         example: 'Standard Type'
       },
-      type_exel_name_cn: {
+      type_axel_name_cn: {
         type: 'string',
         nullable: true,
-        description: 'Type exel name in Chinese',
+        description: 'Type axel name in Chinese',
         example: '标准类型'
       },
-      type_exel_description: {
+      type_axel_description: {
         type: 'string',
         nullable: true,
-        description: 'Description of the type exel',
-        example: 'Standard type for exel'
+        description: 'Description of the type axel',
+        example: 'Standard type for axel'
       },
       created_at: {
         type: 'string',
@@ -77,30 +77,30 @@ const typeExelSchemas = {
       }
     }
   },
-  TypeExelInput: {
+  TypeAxelInput: {
     type: 'object',
     properties: {
-      type_exel_name_en: {
+      type_axel_name_en: {
         type: 'string',
         maxLength: 255,
-        description: 'Type exel name in English',
+        description: 'Type axel name in English',
         example: 'Standard Type'
       },
-      type_exel_name_cn: {
+      type_axel_name_cn: {
         type: 'string',
         maxLength: 255,
-        description: 'Type exel name in Chinese',
+        description: 'Type axel name in Chinese',
         example: '标准类型'
       },
-      type_exel_description: {
+      type_axel_description: {
         type: 'string',
         maxLength: 1000,
-        description: 'Description of the type exel',
-        example: 'Standard type for exel'
+        description: 'Description of the type axel',
+        example: 'Standard type for axel'
       }
     }
   },
-  TypeExelGetInput: {
+  TypeAxelGetInput: {
     type: 'object',
     properties: {
       page: {
@@ -124,7 +124,7 @@ const typeExelSchemas = {
       },
       sort_by: {
         type: 'string',
-        enum: ['created_at', 'updated_at', 'type_exel_name_en', 'type_exel_name_cn'],
+        enum: ['created_at', 'updated_at', 'type_axel_name_en', 'type_axel_name_cn'],
         description: 'Field to sort by',
         example: 'created_at'
       },
@@ -136,7 +136,7 @@ const typeExelSchemas = {
       }
     }
   },
-  TypeExelListResponse: {
+  TypeAxelListResponse: {
     type: 'object',
     properties: {
       success: {
@@ -148,7 +148,7 @@ const typeExelSchemas = {
         properties: {
           items: {
             type: 'array',
-            items: { $ref: '#/components/schemas/TypeExel' }
+            items: { $ref: '#/components/schemas/TypeAxel' }
           },
           pagination: {
             type: 'object',
@@ -179,17 +179,17 @@ const typeExelSchemas = {
       }
     }
   },
-  TypeExelResponse: {
+  TypeAxelResponse: {
     type: 'object',
     properties: {
       success: {
         type: 'boolean',
         example: true
       },
-      data: { $ref: '#/components/schemas/TypeExel' },
+      data: { $ref: '#/components/schemas/TypeAxel' },
       message: {
         type: 'string',
-        example: 'Type exel berhasil dibuat'
+        example: 'Type axel berhasil dibuat'
       }
     }
   },
@@ -214,5 +214,5 @@ const typeExelSchemas = {
   }
 };
 
-module.exports = typeExelSchemas;
+module.exports = typeAxelSchemas;
 

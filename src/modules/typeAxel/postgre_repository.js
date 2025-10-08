@@ -1,6 +1,6 @@
 const { pgCore: db } = require('../../config/database');
 
-const TABLE_NAME = 'type_exels';
+const TABLE_NAME = 'type_axels';
 
 /**
  * Find all items with pagination and search
@@ -15,9 +15,9 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
   // Apply search filter if provided
   if (filters.search) {
     query = query.where(function() {
-      this.where('type_exel_name_en', 'ilike', `%${filters.search}%`)
-        .orWhere('type_exel_name_cn', 'ilike', `%${filters.search}%`)
-        .orWhere('type_exel_description', 'ilike', `%${filters.search}%`);
+      this.where('type_axel_name_en', 'ilike', `%${filters.search}%`)
+        .orWhere('type_axel_name_cn', 'ilike', `%${filters.search}%`)
+        .orWhere('type_axel_description', 'ilike', `%${filters.search}%`);
     });
   }
 
@@ -36,13 +36,13 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
   
   if (filters.search) {
     countQuery = countQuery.where(function() {
-      this.where('type_exel_name_en', 'ilike', `%${filters.search}%`)
-        .orWhere('type_exel_name_cn', 'ilike', `%${filters.search}%`)
-        .orWhere('type_exel_description', 'ilike', `%${filters.search}%`);
+      this.where('type_axel_name_en', 'ilike', `%${filters.search}%`)
+        .orWhere('type_axel_name_cn', 'ilike', `%${filters.search}%`)
+        .orWhere('type_axel_description', 'ilike', `%${filters.search}%`);
     });
   }
   
-  const total = await countQuery.count('type_exel_id as count').first();
+  const total = await countQuery.count('type_axel_id as count').first();
     
   return {
     items: data,
@@ -60,7 +60,7 @@ const findAll = async (page = 1, limit = 10, filters = {}) => {
  */
 const findById = async (id) => {
   return await db(TABLE_NAME)
-    .where({ type_exel_id: id, deleted_at: null })
+    .where({ type_axel_id: id, deleted_at: null })
     .first();
 };
 
@@ -92,7 +92,7 @@ const create = async (data) => {
  */
 const update = async (id, data) => {
   const [result] = await db(TABLE_NAME)
-    .where({ type_exel_id: id, deleted_at: null })
+    .where({ type_axel_id: id, deleted_at: null })
     .update({
       ...data,
       updated_at: db.fn.now()
@@ -106,7 +106,7 @@ const update = async (id, data) => {
  */
 const remove = async (id, userId) => {
   const [result] = await db(TABLE_NAME)
-    .where({ type_exel_id: id, deleted_at: null })
+    .where({ type_axel_id: id, deleted_at: null })
     .update({
       deleted_at: db.fn.now(),
       deleted_by: userId,
@@ -121,7 +121,7 @@ const remove = async (id, userId) => {
  */
 const restore = async (id) => {
   const [result] = await db(TABLE_NAME)
-    .where({ type_exel_id: id })
+    .where({ type_axel_id: id })
     .whereNotNull('deleted_at')
     .update({
       deleted_at: null,
@@ -138,7 +138,7 @@ const restore = async (id) => {
  */
 const hardDelete = async (id) => {
   return await db(TABLE_NAME)
-    .where({ type_exel_id: id })
+    .where({ type_axel_id: id })
     .del();
 };
 

@@ -1,12 +1,12 @@
-# Type Exel Module
+# Type Axel Module
 
-Module untuk mengelola data type exel dalam sistem catalog.
+Module untuk mengelola data type axel dalam sistem catalog.
 
 ## Endpoints
 
-### 1. Get All Type Exels (dengan pagination dan filter)
+### 1. Get All Type Axels (dengan pagination dan filter)
 ```
-POST /api/catalogs/type_exel/get
+POST /api/catalogs/type_axel/get
 ```
 
 **Request Body:**
@@ -27,10 +27,10 @@ POST /api/catalogs/type_exel/get
   "data": {
     "items": [
       {
-        "type_exel_id": "uuid",
-        "type_exel_name_en": "string",
-        "type_exel_name_cn": "string",
-        "type_exel_description": "string",
+        "type_axel_id": "uuid",
+        "type_axel_name_en": "string",
+        "type_axel_name_cn": "string",
+        "type_axel_description": "string",
         "created_at": "timestamp",
         "created_by": "uuid",
         "updated_at": "timestamp",
@@ -50,9 +50,9 @@ POST /api/catalogs/type_exel/get
 }
 ```
 
-### 2. Get Type Exel by ID
+### 2. Get Type Axel by ID
 ```
-GET /api/catalogs/type_exel/:id
+GET /api/catalogs/type_axel/:id
 ```
 
 **Response:**
@@ -60,10 +60,10 @@ GET /api/catalogs/type_exel/:id
 {
   "success": true,
   "data": {
-    "type_exel_id": "uuid",
-    "type_exel_name_en": "string",
-    "type_exel_name_cn": "string",
-    "type_exel_description": "string",
+    "type_axel_id": "uuid",
+    "type_axel_name_en": "string",
+    "type_axel_name_cn": "string",
+    "type_axel_description": "string",
     "created_at": "timestamp",
     "created_by": "uuid",
     "updated_at": "timestamp",
@@ -75,52 +75,17 @@ GET /api/catalogs/type_exel/:id
 }
 ```
 
-### 3. Create Type Exel
+### 3. Create Type Axel
 ```
-POST /api/catalogs/type_exel/create
-```
-
-**Request Body:**
-```json
-{
-  "type_exel_name_en": "Standard Type",
-  "type_exel_name_cn": "标准类型",
-  "type_exel_description": "Description of the type exel"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "type_exel_id": "uuid",
-    "type_exel_name_en": "Standard Type",
-    "type_exel_name_cn": "标准类型",
-    "type_exel_description": "Description of the type exel",
-    "created_at": "timestamp",
-    "created_by": "uuid",
-    "updated_at": "timestamp",
-    "updated_by": "uuid",
-    "deleted_at": null,
-    "deleted_by": null,
-    "is_delete": false
-  },
-  "message": "Type exel berhasil dibuat"
-}
-```
-
-### 4. Update Type Exel
-```
-PUT /api/catalogs/type_exel/:id
+POST /api/catalogs/type_axel/create
 ```
 
 **Request Body:**
 ```json
 {
-  "type_exel_name_en": "Updated Type",
-  "type_exel_name_cn": "更新类型",
-  "type_exel_description": "Updated description"
+  "type_axel_name_en": "Standard Type",
+  "type_axel_name_cn": "标准类型",
+  "type_axel_description": "Description of the type axel"
 }
 ```
 
@@ -129,10 +94,10 @@ PUT /api/catalogs/type_exel/:id
 {
   "success": true,
   "data": {
-    "type_exel_id": "uuid",
-    "type_exel_name_en": "Updated Type",
-    "type_exel_name_cn": "更新类型",
-    "type_exel_description": "Updated description",
+    "type_axel_id": "uuid",
+    "type_axel_name_en": "Standard Type",
+    "type_axel_name_cn": "标准类型",
+    "type_axel_description": "Description of the type axel",
     "created_at": "timestamp",
     "created_by": "uuid",
     "updated_at": "timestamp",
@@ -141,26 +106,22 @@ PUT /api/catalogs/type_exel/:id
     "deleted_by": null,
     "is_delete": false
   },
-  "message": "Type exel berhasil diupdate"
+  "message": "Type axel berhasil dibuat"
 }
 ```
 
-### 5. Delete Type Exel (Soft Delete)
+### 4. Update Type Axel
 ```
-DELETE /api/catalogs/type_exel/:id
+PUT /api/catalogs/type_axel/:id
 ```
 
-**Response:**
+**Request Body:**
 ```json
 {
-  "success": true,
-  "message": "Type exel berhasil dihapus"
+  "type_axel_name_en": "Updated Type",
+  "type_axel_name_cn": "更新类型",
+  "type_axel_description": "Updated description"
 }
-```
-
-### 6. Restore Type Exel
-```
-POST /api/catalogs/type_exel/:id/restore
 ```
 
 **Response:**
@@ -168,10 +129,10 @@ POST /api/catalogs/type_exel/:id/restore
 {
   "success": true,
   "data": {
-    "type_exel_id": "uuid",
-    "type_exel_name_en": "string",
-    "type_exel_name_cn": "string",
-    "type_exel_description": "string",
+    "type_axel_id": "uuid",
+    "type_axel_name_en": "Updated Type",
+    "type_axel_name_cn": "更新类型",
+    "type_axel_description": "Updated description",
     "created_at": "timestamp",
     "created_by": "uuid",
     "updated_at": "timestamp",
@@ -180,7 +141,46 @@ POST /api/catalogs/type_exel/:id/restore
     "deleted_by": null,
     "is_delete": false
   },
-  "message": "Type exel berhasil direstore"
+  "message": "Type axel berhasil diupdate"
+}
+```
+
+### 5. Delete Type Axel (Soft Delete)
+```
+DELETE /api/catalogs/type_axel/:id
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Type axel berhasil dihapus"
+}
+```
+
+### 6. Restore Type Axel
+```
+POST /api/catalogs/type_axel/:id/restore
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "type_axel_id": "uuid",
+    "type_axel_name_en": "string",
+    "type_axel_name_cn": "string",
+    "type_axel_description": "string",
+    "created_at": "timestamp",
+    "created_by": "uuid",
+    "updated_at": "timestamp",
+    "updated_by": "uuid",
+    "deleted_at": null,
+    "deleted_by": null,
+    "is_delete": false
+  },
+  "message": "Type axel berhasil direstore"
 }
 ```
 
@@ -193,10 +193,10 @@ Authorization: Bearer <your_token_here>
 
 ## Field Descriptions
 
-- `type_exel_id`: UUID unik untuk setiap type exel
-- `type_exel_name_en`: Nama type exel dalam bahasa Inggris (opsional)
-- `type_exel_name_cn`: Nama type exel dalam bahasa China (opsional)
-- `type_exel_description`: Deskripsi type exel (opsional)
+- `type_axel_id`: UUID unik untuk setiap type axel
+- `type_axel_name_en`: Nama type axel dalam bahasa Inggris (opsional)
+- `type_axel_name_cn`: Nama type axel dalam bahasa China (opsional)
+- `type_axel_description`: Deskripsi type axel (opsional)
 - `created_at`: Timestamp pembuatan record
 - `created_by`: UUID user yang membuat record (diambil dari token)
 - `updated_at`: Timestamp update terakhir
@@ -208,15 +208,15 @@ Authorization: Bearer <your_token_here>
 ## Validation Rules
 
 ### Create & Update:
-- `type_exel_name_en`: Opsional, maksimal 255 karakter
-- `type_exel_name_cn`: Opsional, maksimal 255 karakter
-- `type_exel_description`: Opsional, maksimal 1000 karakter
+- `type_axel_name_en`: Opsional, maksimal 255 karakter
+- `type_axel_name_cn`: Opsional, maksimal 255 karakter
+- `type_axel_description`: Opsional, maksimal 1000 karakter
 
 ### List (GET with filters):
 - `page`: Integer positif (min: 1)
 - `limit`: Integer antara 1-100
 - `search`: String maksimal 255 karakter
-- `sort_by`: Salah satu dari: created_at, updated_at, type_exel_name_en, type_exel_name_cn
+- `sort_by`: Salah satu dari: created_at, updated_at, type_axel_name_en, type_axel_name_cn
 - `sort_order`: Salah satu dari: asc, desc
 
 ### Get by ID / Delete / Restore:

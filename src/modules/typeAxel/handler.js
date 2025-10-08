@@ -2,7 +2,7 @@ const repository = require('./postgre_repository');
 const { baseResponse, errorResponse } = require('../../utils/response');
 
 /**
- * Get all type exels with pagination and filters
+ * Get all type axels with pagination and filters
  */
 const getAll = async (req, res) => {
   try {
@@ -22,7 +22,7 @@ const getAll = async (req, res) => {
 };
 
 /**
- * Get single type exel by ID
+ * Get single type axel by ID
  */
 const getById = async (req, res) => {
   try {
@@ -40,26 +40,26 @@ const getById = async (req, res) => {
 };
 
 /**
- * Create new type exel
+ * Create new type axel
  */
 const create = async (req, res) => {
   try {
-    const { type_exel_name_en, type_exel_name_cn, type_exel_description } = req.body;
+    const { type_axel_name_en, type_axel_name_cn, type_axel_description } = req.body;
     
     // Get user info from token
     const userId = req.user?.employee_id || req.user?.user_id;
     
     const data = await repository.create({
-      type_exel_name_en,
-      type_exel_name_cn,
-      type_exel_description,
+      type_axel_name_en,
+      type_axel_name_cn,
+      type_axel_description,
       created_by: userId,
       updated_by: userId
     });
     
     return baseResponse(res, { 
       data,
-      message: 'Type exel berhasil dibuat' 
+      message: 'Type axel berhasil dibuat' 
     }, 201);
   } catch (error) {
     return errorResponse(res, error);
@@ -67,20 +67,20 @@ const create = async (req, res) => {
 };
 
 /**
- * Update existing type exel
+ * Update existing type axel
  */
 const update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { type_exel_name_en, type_exel_name_cn, type_exel_description } = req.body;
+    const { type_axel_name_en, type_axel_name_cn, type_axel_description } = req.body;
     
     // Get user info from token
     const userId = req.user?.employee_id || req.user?.user_id;
     
     const data = await repository.update(id, {
-      type_exel_name_en,
-      type_exel_name_cn,
-      type_exel_description,
+      type_axel_name_en,
+      type_axel_name_cn,
+      type_axel_description,
       updated_by: userId
     });
     
@@ -90,7 +90,7 @@ const update = async (req, res) => {
     
     return baseResponse(res, { 
       data,
-      message: 'Type exel berhasil diupdate' 
+      message: 'Type axel berhasil diupdate' 
     });
   } catch (error) {
     return errorResponse(res, error);
@@ -98,7 +98,7 @@ const update = async (req, res) => {
 };
 
 /**
- * Soft delete type exel
+ * Soft delete type axel
  */
 const remove = async (req, res) => {
   try {
@@ -114,7 +114,7 @@ const remove = async (req, res) => {
     }
     
     return baseResponse(res, { 
-      message: 'Type exel berhasil dihapus' 
+      message: 'Type axel berhasil dihapus' 
     });
   } catch (error) {
     return errorResponse(res, error);
@@ -122,7 +122,7 @@ const remove = async (req, res) => {
 };
 
 /**
- * Restore soft deleted type exel
+ * Restore soft deleted type axel
  */
 const restore = async (req, res) => {
   try {
@@ -139,7 +139,7 @@ const restore = async (req, res) => {
     
     return baseResponse(res, { 
       data,
-      message: 'Type exel berhasil direstore' 
+      message: 'Type axel berhasil direstore' 
     });
   } catch (error) {
     return errorResponse(res, error);

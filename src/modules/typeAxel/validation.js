@@ -1,28 +1,28 @@
 const { body, param, query } = require('express-validator');
 
 /**
- * Validation rules for creating type exel
+ * Validation rules for creating type axel
  */
 const createValidation = [
-  body('type_exel_name_en')
+  body('type_axel_name_en')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Type exel name EN maksimal 255 karakter')
+    .withMessage('Type axel name EN maksimal 255 karakter')
     .trim(),
-  body('type_exel_name_cn')
+  body('type_axel_name_cn')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Type exel name CN maksimal 255 karakter')
+    .withMessage('Type axel name CN maksimal 255 karakter')
     .trim(),
-  body('type_exel_description')
+  body('type_axel_description')
     .optional()
     .isLength({ max: 1000 })
-    .withMessage('Type exel description maksimal 1000 karakter')
+    .withMessage('Type axel description maksimal 1000 karakter')
     .trim(),
 ];
 
 /**
- * Validation rules for updating type exel
+ * Validation rules for updating type axel
  */
 const updateValidation = [
   param('id')
@@ -30,25 +30,25 @@ const updateValidation = [
     .withMessage('ID wajib diisi')
     .isUUID()
     .withMessage('Format ID tidak valid'),
-  body('type_exel_name_en')
+  body('type_axel_name_en')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Type exel name EN maksimal 255 karakter')
+    .withMessage('Type axel name EN maksimal 255 karakter')
     .trim(),
-  body('type_exel_name_cn')
+  body('type_axel_name_cn')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Type exel name CN maksimal 255 karakter')
+    .withMessage('Type axel name CN maksimal 255 karakter')
     .trim(),
-  body('type_exel_description')
+  body('type_axel_description')
     .optional()
     .isLength({ max: 1000 })
-    .withMessage('Type exel description maksimal 1000 karakter')
+    .withMessage('Type axel description maksimal 1000 karakter')
     .trim(),
 ];
 
 /**
- * Validation rules for getting type exel by ID
+ * Validation rules for getting type axel by ID
  */
 const getByIdValidation = [
   param('id')
@@ -77,8 +77,8 @@ const listValidation = [
     .trim(),
   body('sort_by')
     .optional()
-    .isIn(['created_at', 'updated_at', 'type_exel_name_en', 'type_exel_name_cn'])
-    .withMessage('Sort by harus salah satu dari: created_at, updated_at, type_exel_name_en, type_exel_name_cn'),
+    .isIn(['created_at', 'updated_at', 'type_axel_name_en', 'type_axel_name_cn'])
+    .withMessage('Sort by harus salah satu dari: created_at, updated_at, type_axel_name_en, type_axel_name_cn'),
   body('sort_order')
     .optional()
     .isIn(['asc', 'desc'])

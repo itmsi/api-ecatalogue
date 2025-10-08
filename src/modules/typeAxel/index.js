@@ -11,8 +11,8 @@ const { verifyToken } = require('../../middlewares/token');
 const { validateMiddleware } = require('../../middlewares/validation');
 
 /**
- * @route   POST /api/catalogs/type_exel/get
- * @desc    Get all type exels with pagination and filters
+ * @route   POST /api/catalogs/type_axel/get
+ * @desc    Get all type axels with pagination and filters
  * @access  Protected
  */
 router.post(
@@ -24,8 +24,8 @@ router.post(
 );
 
 /**
- * @route   GET /api/catalogs/type_exel/:id
- * @desc    Get type exel by ID
+ * @route   GET /api/catalogs/type_axel/:id
+ * @desc    Get type axel by ID
  * @access  Protected
  */
 router.get(
@@ -37,8 +37,8 @@ router.get(
 );
 
 /**
- * @route   POST /api/catalogs/type_exel/create
- * @desc    Create new type exel
+ * @route   POST /api/catalogs/type_axel/create
+ * @desc    Create new type axel
  * @access  Protected
  */
 router.post(
@@ -50,8 +50,8 @@ router.post(
 );
 
 /**
- * @route   PUT /api/catalogs/type_exel/:id
- * @desc    Update type exel
+ * @route   PUT /api/catalogs/type_axel/:id
+ * @desc    Update type axel
  * @access  Protected
  */
 router.put(
@@ -63,8 +63,8 @@ router.put(
 );
 
 /**
- * @route   DELETE /api/catalogs/type_exel/:id
- * @desc    Soft delete type exel
+ * @route   DELETE /api/catalogs/type_axel/:id
+ * @desc    Soft delete type axel
  * @access  Protected
  */
 router.delete(
@@ -76,8 +76,8 @@ router.delete(
 );
 
 /**
- * @route   POST /api/catalogs/type_exel/:id/restore
- * @desc    Restore soft deleted type exel
+ * @route   POST /api/catalogs/type_axel/:id/restore
+ * @desc    Restore soft deleted type axel
  * @access  Protected
  */
 router.post(

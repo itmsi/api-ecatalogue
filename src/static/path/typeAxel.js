@@ -1,13 +1,13 @@
 /**
- * Swagger API Path Definitions for Type Exel Module
+ * Swagger API Path Definitions for Type Axel Module
  */
 
-const typeExelPaths = {
-  '/type_exel/get': {
+const typeAxelPaths = {
+  '/type_axel/get': {
     post: {
-      tags: ['Type Exel'],
-      summary: 'Get all type exels',
-      description: 'Retrieve all type exels with pagination and filters',
+      tags: ['Type Axel'],
+      summary: 'Get all type axels',
+      description: 'Retrieve all type axels with pagination and filters',
       security: [
         {
           bearerAuth: []
@@ -17,7 +17,7 @@ const typeExelPaths = {
         required: false,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/TypeExelGetInput' }
+            schema: { $ref: '#/components/schemas/TypeAxelGetInput' }
           }
         }
       },
@@ -26,7 +26,7 @@ const typeExelPaths = {
           description: 'Success',
           content: {
             'application/json': {
-              schema: { $ref: '#/components/schemas/TypeExelListResponse' }
+              schema: { $ref: '#/components/schemas/TypeAxelListResponse' }
             }
           }
         },
@@ -49,11 +49,11 @@ const typeExelPaths = {
       }
     }
   },
-  '/type_exel/create': {
+  '/type_axel/create': {
     post: {
-      tags: ['Type Exel'],
-      summary: 'Create new type exel',
-      description: 'Create a new type exel item',
+      tags: ['Type Axel'],
+      summary: 'Create new type axel',
+      description: 'Create a new type axel item',
       security: [
         {
           bearerAuth: []
@@ -63,7 +63,7 @@ const typeExelPaths = {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/TypeExelInput' }
+            schema: { $ref: '#/components/schemas/TypeAxelInput' }
           }
         }
       },
@@ -72,7 +72,7 @@ const typeExelPaths = {
           description: 'Created successfully',
           content: {
             'application/json': {
-              schema: { $ref: '#/components/schemas/TypeExelResponse' }
+              schema: { $ref: '#/components/schemas/TypeAxelResponse' }
             }
           }
         },
@@ -95,11 +95,11 @@ const typeExelPaths = {
       }
     }
   },
-  '/type_exel/{id}': {
+  '/type_axel/{id}': {
     get: {
-      tags: ['Type Exel'],
-      summary: 'Get type exel by ID',
-      description: 'Retrieve a single type exel by ID',
+      tags: ['Type Axel'],
+      summary: 'Get type axel by ID',
+      description: 'Retrieve a single type axel by ID',
       security: [
         {
           bearerAuth: []
@@ -110,7 +110,7 @@ const typeExelPaths = {
           name: 'id',
           in: 'path',
           required: true,
-          description: 'Type exel UUID',
+          description: 'Type axel UUID',
           schema: {
             type: 'string',
             format: 'uuid'
@@ -126,7 +126,7 @@ const typeExelPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  data: { $ref: '#/components/schemas/TypeExel' }
+                  data: { $ref: '#/components/schemas/TypeAxel' }
                 }
               }
             }
@@ -151,9 +151,9 @@ const typeExelPaths = {
       }
     },
     put: {
-      tags: ['Type Exel'],
-      summary: 'Update type exel',
-      description: 'Update an existing type exel',
+      tags: ['Type Axel'],
+      summary: 'Update type axel',
+      description: 'Update an existing type axel',
       security: [
         {
           bearerAuth: []
@@ -164,7 +164,7 @@ const typeExelPaths = {
           name: 'id',
           in: 'path',
           required: true,
-          description: 'Type exel UUID',
+          description: 'Type axel UUID',
           schema: {
             type: 'string',
             format: 'uuid'
@@ -175,7 +175,7 @@ const typeExelPaths = {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/TypeExelInput' }
+            schema: { $ref: '#/components/schemas/TypeAxelInput' }
           }
         }
       },
@@ -184,7 +184,7 @@ const typeExelPaths = {
           description: 'Updated successfully',
           content: {
             'application/json': {
-              schema: { $ref: '#/components/schemas/TypeExelResponse' }
+              schema: { $ref: '#/components/schemas/TypeAxelResponse' }
             }
           }
         },
@@ -215,9 +215,9 @@ const typeExelPaths = {
       }
     },
     delete: {
-      tags: ['Type Exel'],
-      summary: 'Delete type exel',
-      description: 'Soft delete a type exel (sets deleted_at timestamp)',
+      tags: ['Type Axel'],
+      summary: 'Delete type axel',
+      description: 'Soft delete a type axel (sets deleted_at timestamp)',
       security: [
         {
           bearerAuth: []
@@ -228,7 +228,7 @@ const typeExelPaths = {
           name: 'id',
           in: 'path',
           required: true,
-          description: 'Type exel UUID',
+          description: 'Type axel UUID',
           schema: {
             type: 'string',
             format: 'uuid'
@@ -244,7 +244,7 @@ const typeExelPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Type exel berhasil dihapus' }
+                  message: { type: 'string', example: 'Type axel berhasil dihapus' }
                 }
               }
             }
@@ -271,5 +271,5 @@ const typeExelPaths = {
   }
 };
 
-module.exports = typeExelPaths;
+module.exports = typeAxelPaths;
 
