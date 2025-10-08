@@ -58,6 +58,10 @@ routing.use(`${API_TAG}/productions`, productionModule)
 const sidebarModule = require('../../modules/sidebar')
 routing.use(`${API_TAG}/sidebars`, sidebarModule)
 
+// Type Cabine Module
+const typeCabineModule = require('../../modules/typeCabine')
+routing.use(`${API_TAG}/type_cabine`, typeCabineModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')

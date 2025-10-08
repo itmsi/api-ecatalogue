@@ -49,35 +49,39 @@ const brandsPaths = require('./path/brands');
 const worldManufacturingPlantPaths = require('./path/worldManufacturingPlant');
 const productionPaths = require('./path/production');
 const sidebarPaths = require('./path/sidebar');
+const typeCabineSchema = require('./schema/typeCabine');
+const typeCabinePaths = require('./path/typeCabine');
 // Combine all schemas
 const schemas = {
-  ...exampleSchema,
-  ...categorySchema,
-  ...catalogSchema,
-  ...catalogItemsSchema,
-  ...locationsSchema,
-  ...driverTypesSchema,
-  ...vehicleWeightsSchema,
-  ...brandsSchema,
-  ...worldManufacturingPlantSchema,
-  ...productionSchema,
-  ...sidebarSchema,
+  // ...exampleSchema,
+  // ...categorySchema,
+  // ...catalogSchema,
+  // ...catalogItemsSchema,
+  // ...locationsSchema,
+  // ...driverTypesSchema,
+  // ...vehicleWeightsSchema,
+  // ...brandsSchema,
+  // ...worldManufacturingPlantSchema,
+  // ...productionSchema,
+  // ...sidebarSchema,
+  ...typeCabineSchema,
   // ...yourModuleSchema,
 };
 
 // Combine all paths
 const paths = {
-  ...examplePaths,
-  ...categoryPaths,
-  ...catalogPaths,
-  ...catalogItemsPaths,
-  ...locationsPaths,
-  ...driverTypesPaths,
-  ...vehicleWeightsPaths,
-  ...brandsPaths,
-  ...worldManufacturingPlantPaths,
-  ...productionPaths,
-  ...sidebarPaths,
+  // ...examplePaths,
+  // ...categoryPaths,
+  // ...catalogPaths,
+  // ...catalogItemsPaths,
+  // ...locationsPaths,
+  // ...driverTypesPaths,
+  // ...vehicleWeightsPaths,
+  // ...brandsPaths,
+  // ...worldManufacturingPlantPaths,
+  // ...productionPaths,
+  // ...sidebarPaths,
+  ...typeCabinePaths,
   // ...yourModulePaths,
 };
 
