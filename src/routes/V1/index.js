@@ -70,6 +70,10 @@ routing.use(`${API_TAG}/cabines`, cabinesModule)
 const typeEngineModule = require('../../modules/typeEngine')
 routing.use(`${API_TAG}/type_engine`, typeEngineModule)
 
+// Engines Module
+const enginesModule = require('../../modules/engines')
+routing.use(`${API_TAG}/engines`, enginesModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')
