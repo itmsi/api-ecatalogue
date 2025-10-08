@@ -1,4 +1,4 @@
-const db = require('../../config/database');
+const { pgCore: db } = require('../../config/database');
 
 const TABLE_NAME = 'examples';
 

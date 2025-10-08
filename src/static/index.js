@@ -24,33 +24,35 @@ const servers = [
 
 // Import schemas
 // Tambahkan schema module Anda di sini
-const exampleSchema = require('./schema/example');
-const categorySchema = require('./schema/category');
-const catalogSchema = require('./schema/catalog');
-const catalogItemsSchema = require('./schema/catalogItems');
-const locationsSchema = require('./schema/locations');
-const driverTypesSchema = require('./schema/driverTypes');
-const vehicleWeightsSchema = require('./schema/vehicleWeight');
-const brandsSchema = require('./schema/brands');
-const worldManufacturingPlantSchema = require('./schema/worldManufacturingPlant');
-const productionSchema = require('./schema/production');
-const sidebarSchema = require('./schema/sidebar');
+// const exampleSchema = require('./schema/example');
+// const categorySchema = require('./schema/category');
+// const catalogSchema = require('./schema/catalog');
+// const catalogItemsSchema = require('./schema/catalogItems');
+// const locationsSchema = require('./schema/locations');
+// const driverTypesSchema = require('./schema/driverTypes');
+// const vehicleWeightsSchema = require('./schema/vehicleWeight');
+// const brandsSchema = require('./schema/brands');
+// const worldManufacturingPlantSchema = require('./schema/worldManufacturingPlant');
+// const productionSchema = require('./schema/production');
+// const sidebarSchema = require('./schema/sidebar');
+const cabinesSchema = require('./schema/cabines');
 
 // Import paths
 // Tambahkan path module Anda di sini
-const examplePaths = require('./path/example');
-const categoryPaths = require('./path/category');
-const catalogPaths = require('./path/catalog');
-const catalogItemsPaths = require('./path/catalogItems');
-const locationsPaths = require('./path/locations');
-const driverTypesPaths = require('./path/driverTypes');
-const vehicleWeightsPaths = require('./path/vehicleWeight');
-const brandsPaths = require('./path/brands');
-const worldManufacturingPlantPaths = require('./path/worldManufacturingPlant');
-const productionPaths = require('./path/production');
-const sidebarPaths = require('./path/sidebar');
+// const examplePaths = require('./path/example');
+// const categoryPaths = require('./path/category');
+// const catalogPaths = require('./path/catalog');
+// const catalogItemsPaths = require('./path/catalogItems');
+// const locationsPaths = require('./path/locations');
+// const driverTypesPaths = require('./path/driverTypes');
+// const vehicleWeightsPaths = require('./path/vehicleWeight');
+// const brandsPaths = require('./path/brands');
+// const worldManufacturingPlantPaths = require('./path/worldManufacturingPlant');
+// const productionPaths = require('./path/production');
+// const sidebarPaths = require('./path/sidebar');
 const typeCabineSchema = require('./schema/typeCabine');
 const typeCabinePaths = require('./path/typeCabine');
+const cabinesPaths = require('./path/cabines');
 // Combine all schemas
 const schemas = {
   // ...exampleSchema,
@@ -65,6 +67,7 @@ const schemas = {
   // ...productionSchema,
   // ...sidebarSchema,
   ...typeCabineSchema,
+  ...cabinesSchema,
   // ...yourModuleSchema,
 };
 
@@ -82,6 +85,7 @@ const paths = {
   // ...productionPaths,
   // ...sidebarPaths,
   ...typeCabinePaths,
+  ...cabinesPaths,
   // ...yourModulePaths,
 };
 
