@@ -203,7 +203,7 @@ const create = async (namePdf, dataItems, userId) => {
 /**
  * Find or create master PDF dengan transaction
  */
-const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, createdBy = null, fileFotoUrl = null) => {
+const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, createdBy = null) => {
   // Cek apakah master_pdf sudah ada
   const existing = await trx(MASTER_PDF_TABLE)
     .where({ name_pdf: namePdf, is_delete: false })
@@ -211,16 +211,6 @@ const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, createdBy = nu
     .first();
   
   if (existing) {
-    // Update file_foto jika ada
-    if (fileFotoUrl) {
-      await trx(MASTER_PDF_TABLE)
-        .where({ master_pdf_id: existing.master_pdf_id })
-        .update({
-          file_foto: fileFotoUrl,
-          updated_at: trx.fn.now(),
-          updated_by: createdBy
-        });
-    }
     return existing.master_pdf_id;
   }
   
@@ -233,10 +223,6 @@ const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, createdBy = nu
     updated_by: createdBy,
     is_delete: false
   };
-  
-  if (fileFotoUrl) {
-    insertData.file_foto = fileFotoUrl;
-  }
   
   const [newMasterPdf] = await trx(MASTER_PDF_TABLE)
     .insert(insertData)
@@ -252,11 +238,12 @@ const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, createdBy = nu
  */
 const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUrl = null, engineId = null, typeEngineId = null) => {
   // Find or create master_pdf dengan transaction
-  const masterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, userId, fileFotoUrl);
+  const masterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, userId);
   
   console.log('=== REPOSITORY CREATE: masterPdfId:', masterPdfId);
   console.log('=== REPOSITORY CREATE: engineId:', engineId);
   console.log('=== REPOSITORY CREATE: typeEngineId:', typeEngineId);
+  console.log('=== REPOSITORY CREATE: fileFotoUrl:', fileFotoUrl);
   console.log('=== REPOSITORY CREATE: dataItems count:', dataItems.length);
   
   const results = [];
@@ -276,7 +263,8 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
       catalog_item_name_en: item.catalog_item_name_en || null,
       catalog_item_name_ch: item.catalog_item_name_ch || null,
       description: item.description || null,
-      quantity: item.quantity || null
+      quantity: item.quantity || null,
+      file_foto: fileFotoUrl || null  // Add file_foto to each item
     };
     
     console.log('ItemData to insert/update:', JSON.stringify(itemData, null, 2));
@@ -299,10 +287,16 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
     
     if (existing) {
       // UPDATE existing item
+      const updateData = { ...itemData };
+      // Only update file_foto if new file is uploaded
+      if (!fileFotoUrl) {
+        delete updateData.file_foto;
+      }
+      
       const [updated] = await trx(TABLE_NAME)
         .where({ item_catalog_engine_id: existing.item_catalog_engine_id })
         .update({
-          ...itemData,
+          ...updateData,
           updated_at: trx.fn.now(),
           updated_by: userId
         })
@@ -405,11 +399,12 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
   }
   
   // Find or create master_pdf dengan transaction
-  const masterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, userId, fileFotoUrl);
+  const masterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, userId);
   
   console.log('=== REPOSITORY UPDATE: masterPdfId:', masterPdfId);
   console.log('=== REPOSITORY UPDATE: engineId:', engineId);
   console.log('=== REPOSITORY UPDATE: typeEngineId:', typeEngineId);
+  console.log('=== REPOSITORY UPDATE: fileFotoUrl:', fileFotoUrl);
   console.log('=== REPOSITORY UPDATE: dataItems count:', dataItems.length);
   
   const results = [];
@@ -429,7 +424,8 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
       catalog_item_name_en: item.catalog_item_name_en || null,
       catalog_item_name_ch: item.catalog_item_name_ch || null,
       description: item.description || null,
-      quantity: item.quantity || null
+      quantity: item.quantity || null,
+      file_foto: fileFotoUrl || null  // Add file_foto to each item
     };
     
     console.log('ItemData to insert/update:', JSON.stringify(itemData, null, 2));
@@ -452,10 +448,16 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
     
     if (existing) {
       // UPDATE existing item
+      const updateData = { ...itemData };
+      // Only update file_foto if new file is uploaded
+      if (!fileFotoUrl) {
+        delete updateData.file_foto;
+      }
+      
       const [updated] = await trx(TABLE_NAME)
         .where({ item_catalog_engine_id: existing.item_catalog_engine_id })
         .update({
-          ...itemData,
+          ...updateData,
           updated_at: trx.fn.now(),
           updated_by: userId
         })

@@ -211,7 +211,21 @@ Semua endpoint memerlukan authentication token (Bearer Token) yang berisi `emplo
 - `master_pdf_id` (UUID, PK)
 - `name_pdf` (String)
 - `description` (Text)
-- `file_foto` (Text) - **NEW**: URL foto dari MinIO storage
+- `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at`, `deleted_by`, `is_delete`
+
+### Table: item_catalog_engines
+- `item_catalog_engine_id` (UUID, PK)
+- `master_pdf_id` (UUID, FK to master_pdf)
+- `engine_id` (UUID, FK to engines)
+- `type_engine_id` (UUID, FK to type_engines)
+- `target_id` (String)
+- `diagram_serial_number` (String)
+- `part_number` (String)
+- `catalog_item_name_en` (String)
+- `catalog_item_name_ch` (String)
+- `description` (Text)
+- `quantity` (Integer)
+- **`file_foto` (Text)** - **NEW**: URL foto dari MinIO storage (disimpan di setiap item)
 - `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at`, `deleted_by`, `is_delete`
 
 ## Notes
@@ -223,13 +237,17 @@ Semua endpoint memerlukan authentication token (Bearer Token) yang berisi `emplo
 - Delete menggunakan soft delete (is_delete = true, deleted_at diisi).
 - **NEW**: Endpoint create dan update menggunakan `multipart/form-data` untuk support upload file.
 - **NEW**: Support upload file foto (file_foto) ke MinIO dengan format: jpg, png, gif, webp, svg (max 10MB).
-- **NEW**: Kolom `file_foto` ditambahkan ke tabel `master_pdf` untuk menyimpan URL foto dari MinIO.
+- **NEW**: Kolom `file_foto` ditambahkan ke tabel `item_catalog_engines` untuk menyimpan URL foto dari MinIO.
+- **IMPORTANT**: `file_foto` disimpan **di setiap item** (bukan di master_pdf), sehingga setiap item bisa memiliki foto yang sama.
+- **IMPORTANT**: Jika upload `file_foto`, URL akan diterapkan ke **SEMUA items** dalam satu request.
 - **NEW**: Support import data dari CSV (file_csv) dengan format yang sudah ditentukan (max 10MB).
 - **NEW**: Parameter `use_csv` untuk memilih mode: CSV import atau manual input data_items.
 - **IMPORTANT**: Header CSV harus persis: `target_id,diagram_serial_number,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity`
 - **IMPORTANT**: `engine_id` dan `type_engine_id` diambil dari parameter root level, TIDAK dari CSV.
 - Jika `use_csv=true`, wajib upload file_csv. Jika `use_csv=false`, wajib isi data_items.
 - File foto akan disimpan di MinIO dengan prefix `catalog-images/`.
+- URL file foto akan otomatis diterapkan ke semua items yang di-create/update dalam satu request.
+- Jika update tanpa upload foto baru, foto lama tidak akan berubah (foto existing tetap dipertahankan).
 - Semua operasi menggunakan database transaction untuk memastikan data consistency.
 - Jika ada error (upload gagal, validasi gagal, dll), semua perubahan akan di-rollback.
 - Template CSV tersedia di: `item_catalog_engine_template.csv` di root project.
