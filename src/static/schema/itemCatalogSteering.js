@@ -17,6 +17,7 @@ const itemCatalogSteeringSchemas = {
       catalog_item_name_ch: { type: 'string', nullable: true },
       description: { type: 'string', nullable: true },
       quantity: { type: 'integer', nullable: true },
+      file_foto: { type: 'string', nullable: true, description: 'URL or path to the uploaded foto file' },
       created_at: { type: 'string', format: 'date-time' },
       created_by: { type: 'string', format: 'uuid', nullable: true },
       updated_at: { type: 'string', format: 'date-time' },
@@ -56,6 +57,60 @@ const itemCatalogSteeringSchemas = {
             quantity: { type: 'integer', nullable: true }
           }
         }
+      }
+    }
+  },
+  ItemCatalogSteeringMultipartInput: {
+    type: 'object',
+    required: ['name_pdf'],
+    properties: {
+      name_pdf: {
+        type: 'string',
+        description: 'Nama PDF (akan find or create di master_pdf)',
+        example: 'Steering Catalog 2024'
+      },
+      steering_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Steering ID (optional). Berlaku untuk SEMUA items',
+        example: '1cd67a84-c5d1-46ff-b5c2-f85a70512227'
+      },
+      type_steering_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Type Steering ID (optional). Berlaku untuk SEMUA items',
+        example: 'dec6d87f-ea6a-4a75-a11c-bda336c08275'
+      },
+      file_foto: {
+        type: 'string',
+        format: 'binary',
+        description: 'File foto/gambar untuk catalog (optional). Format: jpg, jpeg, png, gif, webp, svg. Max 10MB'
+      },
+      file_csv: {
+        type: 'string',
+        format: 'binary',
+        description: 'File CSV untuk import data (required jika use_csv = true). Max 10MB. CSV tidak perlu kolom steering_id dan type_steering_id.'
+      },
+      use_csv: {
+        type: 'boolean',
+        description: 'Mode input: true = gunakan file_csv, false = gunakan data_items. Default: false',
+        example: false
+      },
+      data_items: {
+        type: 'string',
+        description: 'JSON string array of items (required jika use_csv = false). Tidak perlu include steering_id dan type_steering_id di setiap item. Format: [{"target_id":"T001","diagram_serial_number":"DSN001",...}]',
+        example: '[{"target_id":"T001","diagram_serial_number":"DSN001","part_number":"PN001","catalog_item_name_en":"Steering Part 1","catalog_item_name_ch":"转向部件1","description":"Description","quantity":10}]'
+      }
+    }
+  },
+  ItemCatalogSteeringDetail: {
+    type: 'object',
+    properties: {
+      name_pdf: { type: 'string' },
+      master_pdf_id: { type: 'string', format: 'uuid' },
+      data_items: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ItemCatalogSteering' }
       }
     }
   },

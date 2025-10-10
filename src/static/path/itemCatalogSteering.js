@@ -48,17 +48,65 @@ const itemCatalogSteeringPaths = {
     post: {
       tags: ['Item Catalog Steering'],
       summary: 'Create new item catalog steering',
+      description: 'Create new item catalog steering with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/ItemCatalogSteeringCreateInput' }
+          'multipart/form-data': {
+            schema: { $ref: '#/components/schemas/ItemCatalogSteeringMultipartInput' }
           }
         }
       },
       responses: {
-        201: { description: 'Data berhasil dibuat' }
+        201: {
+          description: 'Data berhasil dibuat',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Data berhasil dibuat' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      master_pdf_id: { type: 'string', format: 'uuid' },
+                      items: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/ItemCatalogSteering' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error (e.g., MinIO upload failed)',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        }
       }
     }
   },
@@ -83,26 +131,74 @@ const itemCatalogSteeringPaths = {
     put: {
       tags: ['Item Catalog Steering'],
       summary: 'Update item catalog steering',
+      description: 'Update item catalog steering by ID with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
           name: 'id',
           in: 'path',
           required: true,
+          description: 'Item catalog steering ID',
           schema: { type: 'string', format: 'uuid' }
         }
       ],
       requestBody: {
         required: true,
         content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/ItemCatalogSteeringCreateInput' }
+          'multipart/form-data': {
+            schema: { $ref: '#/components/schemas/ItemCatalogSteeringMultipartInput' }
           }
         }
       },
       responses: {
-        200: { description: 'Data berhasil diupdate' },
-        404: { description: 'Data tidak ditemukan' }
+        200: {
+          description: 'Data berhasil diupdate',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Data berhasil diupdate' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      master_pdf_id: { type: 'string', format: 'uuid' },
+                      items: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/ItemCatalogSteering' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        404: {
+          description: 'Data tidak ditemukan',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error (e.g., MinIO upload failed)',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        }
       }
     },
     delete: {
