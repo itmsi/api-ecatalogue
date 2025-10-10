@@ -98,6 +98,26 @@ routing.use(`${API_TAG}/type_steering`, typeSteeringModule)
 const steeringModule = require('../../modules/steering')
 routing.use(`${API_TAG}/steering`, steeringModule)
 
+// Item Catalog Engine Module
+const itemCatalogEngineModule = require('../../modules/itemCatalogEngine')
+routing.use(`${API_TAG}/item_catalog_engine`, itemCatalogEngineModule)
+
+// Item Catalog Transmission Module
+const itemCatalogTransmissionModule = require('../../modules/itemCatalogTransmission')
+routing.use(`${API_TAG}/item_catalog_transmission`, itemCatalogTransmissionModule)
+
+// Item Catalog Axle Module
+const itemCatalogAxleModule = require('../../modules/itemCatalogAxle')
+routing.use(`${API_TAG}/item_catalog_axle`, itemCatalogAxleModule)
+
+// Item Catalog Steering Module
+const itemCatalogSteeringModule = require('../../modules/itemCatalogSteering')
+routing.use(`${API_TAG}/item_catalog_steering`, itemCatalogSteeringModule)
+
+// Item Catalog Cabine Module
+const itemCatalogCabineModule = require('../../modules/itemCatalogCabine')
+routing.use(`${API_TAG}/item_catalog_cabine`, itemCatalogCabineModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')
