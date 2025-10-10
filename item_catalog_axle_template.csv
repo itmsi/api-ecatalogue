@@ -1,0 +1,5 @@
+target_id,diagram_serial_number,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity
+T001,DSN001,PN001,Axle Part 1,车轴部件1,High performance axle part,10
+T002,DSN002,PN002,Axle Part 2,车轴部件2,Durable axle component,5
+T003,DSN003,PN003,Axle Part 3,车轴部件3,Essential axle module,15
+

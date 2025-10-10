@@ -8,12 +8,18 @@ const itemCatalogAxlePaths = {
       tags: ['Item Catalog Axle'],
       summary: 'Get list item catalog axle dengan filter',
       description: 'Retrieve a paginated list of item catalog axles with optional search and filtering',
-      security: [{ bearerAuth: [] }],
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/ItemCatalogAxleGetInput' },
+            schema: {
+              $ref: '#/components/schemas/ItemCatalogAxleGetInput'
+            },
             example: {
               page: 1,
               limit: 10,
@@ -33,10 +39,38 @@ const itemCatalogAxlePaths = {
               schema: {
                 type: 'object',
                 properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Success' },
-                  data: { $ref: '#/components/schemas/ItemCatalogAxlePaginationResponse' }
+                  success: {
+                    type: 'boolean',
+                    example: true
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Success'
+                  },
+                  data: {
+                    $ref: '#/components/schemas/ItemCatalogAxlePaginationResponse'
+                  }
                 }
+              }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
               }
             }
           }
@@ -48,17 +82,88 @@ const itemCatalogAxlePaths = {
     post: {
       tags: ['Item Catalog Axle'],
       summary: 'Create new item catalog axle',
-      security: [{ bearerAuth: [] }],
+      description: 'Create new item catalog axle with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
       requestBody: {
         required: true,
         content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/ItemCatalogAxleCreateInput' }
+          'multipart/form-data': {
+            schema: {
+              $ref: '#/components/schemas/ItemCatalogAxleMultipartInput'
+            }
           }
         }
       },
       responses: {
-        201: { description: 'Data berhasil dibuat' }
+        201: {
+          description: 'Data berhasil dibuat',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean',
+                    example: true
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Data berhasil dibuat'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      master_pdf_id: {
+                        type: 'string',
+                        format: 'uuid'
+                      },
+                      items: {
+                        type: 'array',
+                        items: {
+                          $ref: '#/components/schemas/ItemCatalogAxle'
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -66,64 +171,244 @@ const itemCatalogAxlePaths = {
     get: {
       tags: ['Item Catalog Axle'],
       summary: 'Get item catalog axle by ID',
-      security: [{ bearerAuth: [] }],
+      description: 'Get detailed information of a specific item catalog axle including all related items with the same master_pdf_id',
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
       parameters: [
         {
           name: 'id',
           in: 'path',
           required: true,
-          schema: { type: 'string', format: 'uuid' }
+          schema: {
+            type: 'string',
+            format: 'uuid'
+          },
+          description: 'Item catalog axle ID'
         }
       ],
       responses: {
-        200: { description: 'Success' },
-        404: { description: 'Data tidak ditemukan' }
+        200: {
+          description: 'Success',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean',
+                    example: true
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Success'
+                  },
+                  data: {
+                    $ref: '#/components/schemas/ItemCatalogAxleDetail'
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        404: {
+          description: 'Data tidak ditemukan',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        }
       }
     },
     put: {
       tags: ['Item Catalog Axle'],
       summary: 'Update item catalog axle',
-      security: [{ bearerAuth: [] }],
+      description: 'Update item catalog axle with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
       parameters: [
         {
           name: 'id',
           in: 'path',
           required: true,
-          schema: { type: 'string', format: 'uuid' }
+          schema: {
+            type: 'string',
+            format: 'uuid'
+          },
+          description: 'Item catalog axle ID'
         }
       ],
       requestBody: {
         required: true,
         content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/ItemCatalogAxleCreateInput' }
+          'multipart/form-data': {
+            schema: {
+              $ref: '#/components/schemas/ItemCatalogAxleMultipartInput'
+            }
           }
         }
       },
       responses: {
-        200: { description: 'Data berhasil diupdate' },
-        404: { description: 'Data tidak ditemukan' }
+        200: {
+          description: 'Data berhasil diupdate',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean',
+                    example: true
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Data berhasil diupdate'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      master_pdf_id: {
+                        type: 'string',
+                        format: 'uuid'
+                      },
+                      items: {
+                        type: 'array',
+                        items: {
+                          $ref: '#/components/schemas/ItemCatalogAxle'
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        404: {
+          description: 'Data tidak ditemukan',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        }
       }
     },
     delete: {
       tags: ['Item Catalog Axle'],
       summary: 'Soft delete item catalog axle',
-      security: [{ bearerAuth: [] }],
+      description: 'Soft delete a specific item catalog axle by marking it as deleted',
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
       parameters: [
         {
           name: 'id',
           in: 'path',
           required: true,
-          schema: { type: 'string', format: 'uuid' }
+          schema: {
+            type: 'string',
+            format: 'uuid'
+          },
+          description: 'Item catalog axle ID'
         }
       ],
       responses: {
-        200: { description: 'Data berhasil dihapus' },
-        404: { description: 'Data tidak ditemukan' }
+        200: {
+          description: 'Data berhasil dihapus',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean',
+                    example: true
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Data berhasil dihapus'
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        404: {
+          description: 'Data tidak ditemukan',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        }
       }
     }
   }
 };
 
 module.exports = itemCatalogAxlePaths;
-

@@ -56,6 +56,11 @@ const itemCatalogEngineSchemas = {
         type: 'integer',
         nullable: true
       },
+      file_foto: {
+        type: 'string',
+        nullable: true,
+        description: 'URL or path to the uploaded foto file'
+      },
       created_at: {
         type: 'string',
         format: 'date-time'
