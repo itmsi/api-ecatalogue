@@ -10,6 +10,7 @@ const {
 } = require('./validation');
 const { verifyToken } = require('../../middlewares/token');
 const { validateMiddleware } = require('../../middlewares/validation');
+const { handleItemCatalogEngineUpload } = require('../../middlewares/fileUpload');
 
 /**
  * @swagger
@@ -106,41 +107,31 @@ router.get(
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
  *               - name_pdf
- *               - data_items
  *             properties:
  *               name_pdf:
  *                 type: string
  *                 example: "Engine Catalog 2024"
+ *               file_foto:
+ *                 type: string
+ *                 format: binary
+ *                 description: File foto untuk catalog (optional)
+ *               file_csv:
+ *                 type: string
+ *                 format: binary
+ *                 description: File CSV untuk import data (required jika use_csv = true)
+ *               use_csv:
+ *                 type: boolean
+ *                 description: Jika true, gunakan file_csv. Jika false, gunakan data_items
+ *                 example: false
  *               data_items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     engine_id:
- *                       type: string
- *                       format: uuid
- *                     type_engine_id:
- *                       type: string
- *                       format: uuid
- *                     target_id:
- *                       type: string
- *                     diagram_serial_number:
- *                       type: string
- *                     part_number:
- *                       type: string
- *                     catalog_item_name_en:
- *                       type: string
- *                     catalog_item_name_ch:
- *                       type: string
- *                     description:
- *                       type: string
- *                     quantity:
- *                       type: integer
+ *                 type: string
+ *                 description: JSON string array of items (required jika use_csv = false)
+ *                 example: '[{"engine_id":"1cd67a84-c5d1-46ff-b5c2-f85a70512227","type_engine_id":"dec6d87f-ea6a-4a75-a11c-bda336c08275","target_id":"T001","diagram_serial_number":"DSN001","part_number":"PN001","catalog_item_name_en":"Engine Part 1","catalog_item_name_ch":"引擎部件1","description":"Description","quantity":10}]'
  *     responses:
  *       201:
  *         description: Data berhasil dibuat
@@ -148,6 +139,7 @@ router.get(
 router.post(
   '/create',
   verifyToken,
+  handleItemCatalogEngineUpload,
   createValidation,
   validateMiddleware,
   handler.create
@@ -172,41 +164,31 @@ router.post(
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
  *               - name_pdf
- *               - data_items
  *             properties:
  *               name_pdf:
  *                 type: string
  *                 example: "Engine Catalog 2024"
+ *               file_foto:
+ *                 type: string
+ *                 format: binary
+ *                 description: File foto untuk catalog (optional)
+ *               file_csv:
+ *                 type: string
+ *                 format: binary
+ *                 description: File CSV untuk import data (required jika use_csv = true)
+ *               use_csv:
+ *                 type: boolean
+ *                 description: Jika true, gunakan file_csv. Jika false, gunakan data_items
+ *                 example: false
  *               data_items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     engine_id:
- *                       type: string
- *                       format: uuid
- *                     type_engine_id:
- *                       type: string
- *                       format: uuid
- *                     target_id:
- *                       type: string
- *                     diagram_serial_number:
- *                       type: string
- *                     part_number:
- *                       type: string
- *                     catalog_item_name_en:
- *                       type: string
- *                     catalog_item_name_ch:
- *                       type: string
- *                     description:
- *                       type: string
- *                     quantity:
- *                       type: integer
+ *                 type: string
+ *                 description: JSON string array of items (required jika use_csv = false)
+ *                 example: '[{"engine_id":"1cd67a84-c5d1-46ff-b5c2-f85a70512227","type_engine_id":"dec6d87f-ea6a-4a75-a11c-bda336c08275","target_id":"T001","diagram_serial_number":"DSN001","part_number":"PN001","catalog_item_name_en":"Engine Part 1","catalog_item_name_ch":"引擎部件1","description":"Description","quantity":10}]'
  *     responses:
  *       200:
  *         description: Data berhasil diupdate
@@ -216,6 +198,7 @@ router.post(
 router.put(
   '/:id',
   verifyToken,
+  handleItemCatalogEngineUpload,
   updateValidation,
   validateMiddleware,
   handler.update

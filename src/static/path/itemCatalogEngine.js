@@ -82,7 +82,7 @@ const itemCatalogEnginePaths = {
     post: {
       tags: ['Item Catalog Engine'],
       summary: 'Create new item catalog engine',
-      description: 'Create new item catalog engine with bulk insert data_items',
+      description: 'Create new item catalog engine with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
       security: [
         {
           bearerAuth: []
@@ -91,25 +91,9 @@ const itemCatalogEnginePaths = {
       requestBody: {
         required: true,
         content: {
-          'application/json': {
+          'multipart/form-data': {
             schema: {
-              $ref: '#/components/schemas/ItemCatalogEngineCreateInput'
-            },
-            example: {
-              name_pdf: 'Engine Catalog 2024',
-              data_items: [
-                {
-                  engine_id: '550e8400-e29b-41d4-a716-446655440001',
-                  type_engine_id: '550e8400-e29b-41d4-a716-446655440002',
-                  target_id: 'T001',
-                  diagram_serial_number: 'DSN001',
-                  part_number: 'PN001',
-                  catalog_item_name_en: 'Engine Part 1',
-                  catalog_item_name_ch: '引擎部件1',
-                  description: 'Description',
-                  quantity: 10
-                }
-              ]
+              $ref: '#/components/schemas/ItemCatalogEngineMultipartInput'
             }
           }
         }
@@ -162,6 +146,16 @@ const itemCatalogEnginePaths = {
         },
         401: {
           description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error (e.g., MinIO upload failed)',
           content: {
             'application/json': {
               schema: {
@@ -234,7 +228,7 @@ const itemCatalogEnginePaths = {
     put: {
       tags: ['Item Catalog Engine'],
       summary: 'Update item catalog engine',
-      description: 'Update item catalog engine by ID',
+      description: 'Update item catalog engine by ID with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
       security: [
         {
           bearerAuth: []
@@ -255,9 +249,9 @@ const itemCatalogEnginePaths = {
       requestBody: {
         required: true,
         content: {
-          'application/json': {
+          'multipart/form-data': {
             schema: {
-              $ref: '#/components/schemas/ItemCatalogEngineCreateInput'
+              $ref: '#/components/schemas/ItemCatalogEngineMultipartInput'
             }
           }
         }
@@ -277,14 +271,49 @@ const itemCatalogEnginePaths = {
                   message: {
                     type: 'string',
                     example: 'Data berhasil diupdate'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      master_pdf_id: {
+                        type: 'string',
+                        format: 'uuid'
+                      },
+                      items: {
+                        type: 'array',
+                        items: {
+                          $ref: '#/components/schemas/ItemCatalogEngine'
+                        }
+                      }
+                    }
                   }
                 }
               }
             }
           }
         },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
         404: {
           description: 'Data tidak ditemukan',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error (e.g., MinIO upload failed)',
           content: {
             'application/json': {
               schema: {

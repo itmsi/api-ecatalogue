@@ -1,0 +1,5 @@
+target_id,diagram_serial_number,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity
+T001,DSN001,PN001,Engine Part 1,引擎部件1,High performance engine part,10
+T002,DSN002,PN002,Engine Part 2,引擎部件2,Durable engine component,5
+T003,DSN003,PN003,Engine Part 3,引擎部件3,Essential engine module,15
+

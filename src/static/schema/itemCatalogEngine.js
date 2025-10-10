@@ -167,6 +167,49 @@ const itemCatalogEngineSchemas = {
       }
     }
   },
+  ItemCatalogEngineMultipartInput: {
+    type: 'object',
+    required: ['name_pdf'],
+    properties: {
+      name_pdf: {
+        type: 'string',
+        description: 'Nama PDF (akan find or create di master_pdf)',
+        example: 'Engine Catalog 2024'
+      },
+      engine_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Engine ID (optional). Berlaku untuk SEMUA items',
+        example: '1cd67a84-c5d1-46ff-b5c2-f85a70512227'
+      },
+      type_engine_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Type Engine ID (optional). Berlaku untuk SEMUA items',
+        example: 'dec6d87f-ea6a-4a75-a11c-bda336c08275'
+      },
+      file_foto: {
+        type: 'string',
+        format: 'binary',
+        description: 'File foto/gambar untuk catalog (optional). Format: jpg, jpeg, png, gif, webp, svg. Max 10MB'
+      },
+      file_csv: {
+        type: 'string',
+        format: 'binary',
+        description: 'File CSV untuk import data (required jika use_csv = true). Max 10MB. CSV tidak perlu kolom engine_id dan type_engine_id. Lihat template: item_catalog_engine_template.csv'
+      },
+      use_csv: {
+        type: 'boolean',
+        description: 'Mode input: true = gunakan file_csv, false = gunakan data_items. Default: false',
+        example: false
+      },
+      data_items: {
+        type: 'string',
+        description: 'JSON string array of items (required jika use_csv = false). Tidak perlu include engine_id dan type_engine_id di setiap item. Format: [{"target_id":"T001","diagram_serial_number":"DSN001",...}]',
+        example: '[{"target_id":"T001","diagram_serial_number":"DSN001","part_number":"PN001","catalog_item_name_en":"Engine Part 1","catalog_item_name_ch":"引擎部件1","description":"Description","quantity":10}]'
+      }
+    }
+  },
   ItemCatalogEngineDetail: {
     type: 'object',
     properties: {
