@@ -49,47 +49,65 @@ const createValidation = [
     .isString()
     .withMessage('Name PDF harus berupa string')
     .trim(),
-  body('data_items')
+  body('transmission_id')
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(value)) {
+        throw new Error('Transmission ID harus berupa UUID yang valid');
+      }
+      return true;
+    }),
+  body('type_transmission_id')
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(value)) {
+        throw new Error('Type Transmission ID harus berupa UUID yang valid');
+      }
+      return true;
+    }),
+  body('use_csv')
     .notEmpty()
-    .withMessage('Data items wajib diisi')
-    .isArray({ min: 1 })
-    .withMessage('Data items harus berupa array dengan minimal 1 item'),
-  body('data_items.*.transmission_id')
+    .withMessage('use_csv wajib diisi')
+    .custom((value) => {
+      if (value === 'true' || value === 'false' || value === true || value === false) {
+        return true;
+      }
+      throw new Error('use_csv harus berupa boolean (true atau false)');
+    }),
+  body('data_items')
     .optional()
-    .isUUID()
-    .withMessage('Transmission ID harus berupa UUID yang valid'),
-  body('data_items.*.type_transmission_id')
-    .optional()
-    .isUUID()
-    .withMessage('Type Transmission ID harus berupa UUID yang valid'),
-  body('data_items.*.target_id')
-    .optional()
-    .isString()
-    .withMessage('Target ID harus berupa string'),
-  body('data_items.*.diagram_serial_number')
-    .optional()
-    .isString()
-    .withMessage('Diagram serial number harus berupa string'),
-  body('data_items.*.part_number')
-    .optional()
-    .isString()
-    .withMessage('Part number harus berupa string'),
-  body('data_items.*.catalog_item_name_en')
-    .optional()
-    .isString()
-    .withMessage('Catalog item name (EN) harus berupa string'),
-  body('data_items.*.catalog_item_name_ch')
-    .optional()
-    .isString()
-    .withMessage('Catalog item name (CH) harus berupa string'),
-  body('data_items.*.description')
-    .optional()
-    .isString()
-    .withMessage('Description harus berupa string'),
-  body('data_items.*.quantity')
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage('Quantity harus berupa angka positif atau 0')
+    .custom((value, { req }) => {
+      const useCsv = req.body.use_csv === 'true' || req.body.use_csv === true;
+      
+      // Jika use_csv = false, maka data_items wajib diisi
+      if (!useCsv && !value) {
+        throw new Error('data_items wajib diisi jika use_csv = false');
+      }
+      
+      // Jika data_items diisi, validasi formatnya
+      if (value) {
+        let items;
+        try {
+          items = typeof value === 'string' ? JSON.parse(value) : value;
+        } catch (e) {
+          throw new Error('data_items harus berupa JSON array yang valid');
+        }
+        
+        if (!Array.isArray(items) || items.length === 0) {
+          throw new Error('data_items harus berupa array dengan minimal 1 item');
+        }
+      }
+      
+      return true;
+    })
 ];
 
 /**
@@ -107,47 +125,65 @@ const updateValidation = [
     .isString()
     .withMessage('Name PDF harus berupa string')
     .trim(),
-  body('data_items')
+  body('transmission_id')
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(value)) {
+        throw new Error('Transmission ID harus berupa UUID yang valid');
+      }
+      return true;
+    }),
+  body('type_transmission_id')
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(value)) {
+        throw new Error('Type Transmission ID harus berupa UUID yang valid');
+      }
+      return true;
+    }),
+  body('use_csv')
     .notEmpty()
-    .withMessage('Data items wajib diisi')
-    .isArray({ min: 1 })
-    .withMessage('Data items harus berupa array dengan minimal 1 item'),
-  body('data_items.*.transmission_id')
+    .withMessage('use_csv wajib diisi')
+    .custom((value) => {
+      if (value === 'true' || value === 'false' || value === true || value === false) {
+        return true;
+      }
+      throw new Error('use_csv harus berupa boolean (true atau false)');
+    }),
+  body('data_items')
     .optional()
-    .isUUID()
-    .withMessage('Transmission ID harus berupa UUID yang valid'),
-  body('data_items.*.type_transmission_id')
-    .optional()
-    .isUUID()
-    .withMessage('Type Transmission ID harus berupa UUID yang valid'),
-  body('data_items.*.target_id')
-    .optional()
-    .isString()
-    .withMessage('Target ID harus berupa string'),
-  body('data_items.*.diagram_serial_number')
-    .optional()
-    .isString()
-    .withMessage('Diagram serial number harus berupa string'),
-  body('data_items.*.part_number')
-    .optional()
-    .isString()
-    .withMessage('Part number harus berupa string'),
-  body('data_items.*.catalog_item_name_en')
-    .optional()
-    .isString()
-    .withMessage('Catalog item name (EN) harus berupa string'),
-  body('data_items.*.catalog_item_name_ch')
-    .optional()
-    .isString()
-    .withMessage('Catalog item name (CH) harus berupa string'),
-  body('data_items.*.description')
-    .optional()
-    .isString()
-    .withMessage('Description harus berupa string'),
-  body('data_items.*.quantity')
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage('Quantity harus berupa angka positif atau 0')
+    .custom((value, { req }) => {
+      const useCsv = req.body.use_csv === 'true' || req.body.use_csv === true;
+      
+      // Jika use_csv = false, maka data_items wajib diisi
+      if (!useCsv && !value) {
+        throw new Error('data_items wajib diisi jika use_csv = false');
+      }
+      
+      // Jika data_items diisi, validasi formatnya
+      if (value) {
+        let items;
+        try {
+          items = typeof value === 'string' ? JSON.parse(value) : value;
+        } catch (e) {
+          throw new Error('data_items harus berupa JSON array yang valid');
+        }
+        
+        if (!Array.isArray(items) || items.length === 0) {
+          throw new Error('data_items harus berupa array dengan minimal 1 item');
+        }
+      }
+      
+      return true;
+    })
 ];
 
 /**

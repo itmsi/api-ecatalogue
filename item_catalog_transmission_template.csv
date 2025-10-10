@@ -1,0 +1,7 @@
+target_id,diagram_serial_number,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity
+T001,DSN001,PN001,Transmission Gear Assembly,变速器齿轮总成,Main transmission gear assembly for heavy duty trucks,10
+T002,DSN002,PN002,Clutch Plate,离合器片,High performance clutch plate,25
+T003,DSN003,PN003,Input Shaft,输入轴,Forged steel input shaft,15
+T004,DSN004,PN004,Output Shaft,输出轴,Heat treated output shaft,12
+T005,DSN005,PN005,Synchronizer Ring,同步环,Brass synchronizer ring,30
+
