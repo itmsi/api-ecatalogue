@@ -63,6 +63,61 @@ exports.seed = async function(knex) {
       updated_at: knex.fn.now(),
      updated_by: knex.raw('uuid_generate_v4()'),
       is_delete: false
+    },
+    {
+      brand_id: knex.raw('uuid_generate_v4()'),
+      brand_code: 'NISN',
+      brand_name: 'Nissan Commercial',
+      brand_description: 'Brand Nissan untuk kendaraan komersial dan truk',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      brand_id: knex.raw('uuid_generate_v4()'),
+      brand_code: 'IZUZ',
+      brand_name: 'Isuzu Heavy Truck',
+      brand_description: 'Brand Isuzu khusus untuk truk berat dan komersial',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      brand_id: knex.raw('uuid_generate_v4()'),
+      brand_code: 'HINO',
+      brand_name: 'Hino Motors',
+      brand_description: 'Brand Hino untuk truk dan bus komersial',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      brand_id: knex.raw('uuid_generate_v4()'),
+      brand_code: 'DHTK',
+      brand_name: 'Daihatsu Truck',
+      brand_description: 'Brand Daihatsu untuk kendaraan ringan dan truk kecil',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      brand_id: knex.raw('uuid_generate_v4()'),
+      brand_code: 'MAZD',
+      brand_name: 'Mazda Commercial',
+      brand_description: 'Brand Mazda untuk kendaraan komersial dan van',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
     }
   ]);
 };

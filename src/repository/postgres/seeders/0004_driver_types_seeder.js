@@ -63,6 +63,61 @@ exports.seed = async function(knex) {
       updated_at: knex.fn.now(),
       updated_by: 'admin',
       is_delete: false
+    },
+    {
+      driver_type_id: knex.raw('uuid_generate_v4()'),
+      driver_type_code: 'AMT',
+      driver_type_name: 'Automated Manual',
+      driver_type_description: 'Transmisi manual terautomasi dengan kontrol elektronik',
+      created_at: knex.fn.now(),
+      created_by: 'admin',
+      updated_at: knex.fn.now(),
+      updated_by: 'admin',
+      is_delete: false
+    },
+    {
+      driver_type_id: knex.raw('uuid_generate_v4()'),
+      driver_type_code: 'SEQ',
+      driver_type_name: 'Sequential',
+      driver_type_description: 'Transmisi sekuensial untuk performa tinggi',
+      created_at: knex.fn.now(),
+      created_by: 'admin',
+      updated_at: knex.fn.now(),
+      updated_by: 'admin',
+      is_delete: false
+    },
+    {
+      driver_type_id: knex.raw('uuid_generate_v4()'),
+      driver_type_code: 'TIPTRONIC',
+      driver_type_name: 'Tiptronic',
+      driver_type_description: 'Transmisi otomatis dengan mode manual tiptronic',
+      created_at: knex.fn.now(),
+      created_by: 'admin',
+      updated_at: knex.fn.now(),
+      updated_by: 'admin',
+      is_delete: false
+    },
+    {
+      driver_type_id: knex.raw('uuid_generate_v4()'),
+      driver_type_code: 'IVT',
+      driver_type_name: 'IVT Transmission',
+      driver_type_description: 'Infinitely Variable Transmission untuk efisiensi maksimal',
+      created_at: knex.fn.now(),
+      created_by: 'admin',
+      updated_at: knex.fn.now(),
+      updated_by: 'admin',
+      is_delete: false
+    },
+    {
+      driver_type_id: knex.raw('uuid_generate_v4()'),
+      driver_type_code: 'EVDR',
+      driver_type_name: 'Electric Drive',
+      driver_type_description: 'Sistem penggerak listrik untuk kendaraan elektrik',
+      created_at: knex.fn.now(),
+      created_by: 'admin',
+      updated_at: knex.fn.now(),
+      updated_by: 'admin',
+      is_delete: false
     }
   ]);
 };

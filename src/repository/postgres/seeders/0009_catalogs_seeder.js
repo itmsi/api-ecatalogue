@@ -14,7 +14,7 @@ exports.seed = async function(knex) {
   // Insert seed data
   const catalogData = [];
   
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     // Main catalog entries
     catalogData.push({
       catalog_id: knex.raw('uuid_generate_v4()'),

@@ -63,6 +63,61 @@ exports.seed = async function(knex) {
       updated_at: knex.fn.now(),
       updated_by: knex.raw('uuid_generate_v4()'),
       is_delete: false
+    },
+    {
+      world_manufacturing_plant_id: knex.raw('uuid_generate_v4()'),
+      world_manufacturing_plant_code: 'BANGKOK06',
+      world_manufacturing_plant_name: 'Bangkok Assembly Plant',
+      world_manufacturing_plant_description: 'Pabrik perakitan kendaraan di Bangkok Thailand',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      world_manufacturing_plant_id: knex.raw('uuid_generate_v4()'),
+      world_manufacturing_plant_code: 'JAKARTA07',
+      world_manufacturing_plant_name: 'Jakarta Production Center',
+      world_manufacturing_plant_description: 'Pusat produksi di Jakarta untuk pasar Indonesia',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      world_manufacturing_plant_id: knex.raw('uuid_generate_v4()'),
+      world_manufacturing_plant_code: 'MUMBAI08',
+      world_manufacturing_plant_name: 'Mumbai Industrial Complex',
+      world_manufacturing_plant_description: 'Kompleks industri di Mumbai untuk pasar India',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      world_manufacturing_plant_id: knex.raw('uuid_generate_v4()'),
+      world_manufacturing_plant_code: 'DETROIT09',
+      world_manufacturing_plant_name: 'Detroit Heavy Vehicle Plant',
+      world_manufacturing_plant_description: 'Pabrik kendaraan berat di Detroit Amerika Serikat',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      world_manufacturing_plant_id: knex.raw('uuid_generate_v4()'),
+      world_manufacturing_plant_code: 'BERLIN10',
+      world_manufacturing_plant_name: 'Berlin Engineering Center',
+      world_manufacturing_plant_description: 'Pusat engineering dan R&D di Berlin Jerman',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
     }
   ]);
 };

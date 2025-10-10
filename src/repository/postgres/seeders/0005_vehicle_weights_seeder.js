@@ -63,6 +63,61 @@ exports.seed = async function(knex) {
       updated_at: knex.fn.now(),
       updated_by: knex.raw('uuid_generate_v4()'),
       is_delete: false
+    },
+    {
+      vehicle_weight_id: knex.raw('uuid_generate_v4()'),
+      vehicle_weight_code: 'VLW',
+      vehicle_weight_name: 'Very Light Weight',
+      vehicle_weight_description: 'Kendaraan dengan bobot sangat ringan 500-750kg',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      vehicle_weight_id: knex.raw('uuid_generate_v4()'),
+      vehicle_weight_code: 'LMW',
+      vehicle_weight_name: 'Light-Medium Weight',
+      vehicle_weight_description: 'Kendaraan dengan bobot antara ringan-sedang 750-1500kg',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      vehicle_weight_id: knex.raw('uuid_generate_v4()'),
+      vehicle_weight_code: 'MHW',
+      vehicle_weight_name: 'Medium-Heavy Weight',
+      vehicle_weight_description: 'Kendaraan dengan bobot antara sedang-berat 1500-3000kg',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      vehicle_weight_id: knex.raw('uuid_generate_v4()'),
+      vehicle_weight_code: 'VHW',
+      vehicle_weight_name: 'Very Heavy Weight',
+      vehicle_weight_description: 'Kendaraan dengan bobot sangat berat 5000-8000kg',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
+    },
+    {
+      vehicle_weight_id: knex.raw('uuid_generate_v4()'),
+      vehicle_weight_code: 'UHW',
+      vehicle_weight_name: 'Ultra Heavy Weight',
+      vehicle_weight_description: 'Kendaraan dengan bobot ultra berat di atas 8000kg',
+      created_at: knex.fn.now(),
+      created_by: knex.raw('uuid_generate_v4()'),
+      updated_at: knex.fn.now(),
+      updated_by: knex.raw('uuid_generate_v4()'),
+      is_delete: false
     }
   ]);
 };
