@@ -48,17 +48,65 @@ const itemCatalogCabinePaths = {
     post: {
       tags: ['Item Catalog Cabine'],
       summary: 'Create new item catalog cabine',
+      description: 'Create new item catalog cabine with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/ItemCatalogCabineCreateInput' }
+          'multipart/form-data': {
+            schema: { $ref: '#/components/schemas/ItemCatalogCabineMultipartInput' }
           }
         }
       },
       responses: {
-        201: { description: 'Data berhasil dibuat' }
+        201: {
+          description: 'Data berhasil dibuat',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Data berhasil dibuat' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      master_pdf_id: { type: 'string', format: 'uuid' },
+                      items: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/ItemCatalogCabine' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error (e.g., MinIO upload failed)',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        }
       }
     }
   },
@@ -83,26 +131,74 @@ const itemCatalogCabinePaths = {
     put: {
       tags: ['Item Catalog Cabine'],
       summary: 'Update item catalog cabine',
+      description: 'Update item catalog cabine by ID with multipart form-data. Support file upload (file_foto) and CSV import (file_csv) or manual data input (data_items)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
           name: 'id',
           in: 'path',
           required: true,
+          description: 'Item catalog cabine ID',
           schema: { type: 'string', format: 'uuid' }
         }
       ],
       requestBody: {
         required: true,
         content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/ItemCatalogCabineCreateInput' }
+          'multipart/form-data': {
+            schema: { $ref: '#/components/schemas/ItemCatalogCabineMultipartInput' }
           }
         }
       },
       responses: {
-        200: { description: 'Data berhasil diupdate' },
-        404: { description: 'Data tidak ditemukan' }
+        200: {
+          description: 'Data berhasil diupdate',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Data berhasil diupdate' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      master_pdf_id: { type: 'string', format: 'uuid' },
+                      items: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/ItemCatalogCabine' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        404: {
+          description: 'Data tidak ditemukan',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error (e.g., MinIO upload failed)',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        }
       }
     },
     delete: {

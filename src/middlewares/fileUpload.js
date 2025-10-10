@@ -540,6 +540,66 @@ const handleItemCatalogSteeringUpload = (req, res, next) => {
   });
 };
 
+// Configure multer for item catalog cabine uploads (file_foto + file_csv)
+const itemCatalogCabineUploadStorage = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
+    files: 2 // file_foto + file_csv
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === 'file_foto') {
+      imageFileFilter(req, file, cb);
+    } else if (file.fieldname === 'file_csv') {
+      csvFileFilter(req, file, cb);
+    } else {
+      cb(null, true);
+    }
+  }
+});
+
+// Middleware for item catalog cabine with file_foto and file_csv
+const uploadItemCatalogCabineFields = itemCatalogCabineUploadStorage.fields([
+  { name: 'file_foto', maxCount: 1 },
+  { name: 'file_csv', maxCount: 1 }
+]);
+
+// Middleware wrapper to handle item catalog cabine upload errors
+const handleItemCatalogCabineUpload = (req, res, next) => {
+  uploadItemCatalogCabineFields(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File terlalu besar. Maksimal 10MB per file.',
+          error: err.message
+        });
+      }
+      if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Terlalu banyak file.',
+          error: err.message
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Error upload file',
+        error: err.message
+      });
+    } else if (err) {
+      // Handle file validation errors
+      return res.status(400).json({
+        success: false,
+        message: 'Error validasi file',
+        error: err.message
+      });
+    }
+    
+    next();
+  });
+};
+
 module.exports = {
   handleFileUpload,
   handleImageUpload,
@@ -548,6 +608,7 @@ module.exports = {
   handleItemCatalogTransmissionUpload,
   handleItemCatalogAxleUpload,
   handleItemCatalogSteeringUpload,
+  handleItemCatalogCabineUpload,
   generateFileName,
   generateCatalogImageFileName,
   getContentType
