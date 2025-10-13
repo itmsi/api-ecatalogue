@@ -21,8 +21,9 @@ const createValidation = [
     .trim(),
   body('production_sequence_number')
     .optional()
-    .isInt()
-    .withMessage('Production sequence number harus berupa angka'),
+    .isLength({ max: 50 })
+    .withMessage('Production sequence number maksimal 50 karakter')
+    .trim(),
   body('production_month')
     .optional()
     .isLength({ max: 50 })
@@ -38,26 +39,55 @@ const createValidation = [
     .isLength({ max: 1000 })
     .withMessage('Production description maksimal 1000 karakter')
     .trim(),
-  body('location_id')
+  body('production_location_id')
     .optional()
     .isUUID()
-    .withMessage('Format Location ID tidak valid'),
-  body('brand_id')
+    .withMessage('Format Production Location ID tidak valid'),
+  body('production_brand_id')
     .optional()
     .isUUID()
-    .withMessage('Format Brand ID tidak valid'),
-  body('driver_type_id')
+    .withMessage('Format Production Brand ID tidak valid'),
+  body('production_driver_type_id')
     .optional()
     .isUUID()
-    .withMessage('Format Driver Type ID tidak valid'),
-  body('vehicle_weight_id')
+    .withMessage('Format Production Driver Type ID tidak valid'),
+  body('production_vehicle_weight_id')
     .optional()
     .isUUID()
-    .withMessage('Format Vehicle Weight ID tidak valid'),
-  body('world_manufacturing_plant_id')
+    .withMessage('Format Production Vehicle Weight ID tidak valid'),
+  body('production_world_manufacturing_plant_id')
     .optional()
     .isUUID()
-    .withMessage('Format World Manufacturing Plant ID tidak valid'),
+    .withMessage('Format Production World Manufacturing Plant ID tidak valid'),
+  body('data_details')
+    .optional()
+    .isArray()
+    .withMessage('Data details harus berupa array'),
+  body('data_details.*.production_detail_description')
+    .optional()
+    .isLength({ max: 1000 })
+    .withMessage('Production detail description maksimal 1000 karakter')
+    .trim(),
+  body('data_details.*.engine_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Engine ID tidak valid'),
+  body('data_details.*.steering_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Steering ID tidak valid'),
+  body('data_details.*.cabine_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Cabine ID tidak valid'),
+  body('data_details.*.axle_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Axle ID tidak valid'),
+  body('data_details.*.transmission_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Transmission ID tidak valid'),
 ];
 
 /**
@@ -86,8 +116,9 @@ const updateValidation = [
     .trim(),
   body('production_sequence_number')
     .optional()
-    .isInt()
-    .withMessage('Production sequence number harus berupa angka'),
+    .isLength({ max: 50 })
+    .withMessage('Production sequence number maksimal 50 karakter')
+    .trim(),
   body('production_month')
     .optional()
     .isLength({ max: 50 })
@@ -103,26 +134,55 @@ const updateValidation = [
     .isLength({ max: 1000 })
     .withMessage('Production description maksimal 1000 karakter')
     .trim(),
-  body('location_id')
+  body('production_location_id')
     .optional()
     .isUUID()
-    .withMessage('Format Location ID tidak valid'),
-  body('brand_id')
+    .withMessage('Format Production Location ID tidak valid'),
+  body('production_brand_id')
     .optional()
     .isUUID()
-    .withMessage('Format Brand ID tidak valid'),
-  body('driver_type_id')
+    .withMessage('Format Production Brand ID tidak valid'),
+  body('production_driver_type_id')
     .optional()
     .isUUID()
-    .withMessage('Format Driver Type ID tidak valid'),
-  body('vehicle_weight_id')
+    .withMessage('Format Production Driver Type ID tidak valid'),
+  body('production_vehicle_weight_id')
     .optional()
     .isUUID()
-    .withMessage('Format Vehicle Weight ID tidak valid'),
-  body('world_manufacturing_plant_id')
+    .withMessage('Format Production Vehicle Weight ID tidak valid'),
+  body('production_world_manufacturing_plant_id')
     .optional()
     .isUUID()
-    .withMessage('Format World Manufacturing Plant ID tidak valid'),
+    .withMessage('Format Production World Manufacturing Plant ID tidak valid'),
+  body('data_details')
+    .optional()
+    .isArray()
+    .withMessage('Data details harus berupa array'),
+  body('data_details.*.production_detail_description')
+    .optional()
+    .isLength({ max: 1000 })
+    .withMessage('Production detail description maksimal 1000 karakter')
+    .trim(),
+  body('data_details.*.engine_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Engine ID tidak valid'),
+  body('data_details.*.steering_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Steering ID tidak valid'),
+  body('data_details.*.cabine_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Cabine ID tidak valid'),
+  body('data_details.*.axle_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Axle ID tidak valid'),
+  body('data_details.*.transmission_id')
+    .optional()
+    .isUUID()
+    .withMessage('Format Transmission ID tidak valid'),
 ];
 
 /**

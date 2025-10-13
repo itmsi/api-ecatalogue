@@ -290,7 +290,8 @@ const axelPaths = {
               type_axels: [
                 {
                   type_axel_name_en: 'Updated Type',
-                  type_axel_name_cn: '更新型号'
+                  type_axel_name_cn: '更新型号',
+                  type_axel_description: 'Updated type description'
                 }
               ]
             }
