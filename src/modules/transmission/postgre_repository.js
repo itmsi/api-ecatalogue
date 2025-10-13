@@ -11,7 +11,19 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   const offset = (page - 1) * limit;
   
   let query = db(TABLE_NAME)
-    .select('*')
+    .select([
+      'transmission_id',
+      'transmission_name_en',
+      'transmission_name_cn',
+      'transmission_description',
+      'created_at',
+      'created_by',
+      'updated_at',
+      'updated_by',
+      'deleted_at',
+      'deleted_by',
+      'is_delete'
+    ])
     .where({ is_delete: false });
   
   // Search functionality
@@ -87,6 +99,19 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
 const findById = async (id) => {
   // Get transmission data
   const transmission = await db(TABLE_NAME)
+    .select([
+      'transmission_id',
+      'transmission_name_en',
+      'transmission_name_cn',
+      'transmission_description',
+      'created_at',
+      'created_by',
+      'updated_at',
+      'updated_by',
+      'deleted_at',
+      'deleted_by',
+      'is_delete'
+    ])
     .where({ transmission_id: id, is_delete: false })
     .first();
     
@@ -118,6 +143,19 @@ const findById = async (id) => {
  */
 const findOne = async (conditions) => {
   return await db(TABLE_NAME)
+    .select([
+      'transmission_id',
+      'transmission_name_en',
+      'transmission_name_cn',
+      'transmission_description',
+      'created_at',
+      'created_by',
+      'updated_at',
+      'updated_by',
+      'deleted_at',
+      'deleted_by',
+      'is_delete'
+    ])
     .where({ ...conditions, is_delete: false })
     .first();
 };
@@ -138,19 +176,44 @@ const create = async (data, userId) => {
         created_at: db.fn.now(),
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'transmission_id',
+        'transmission_name_en',
+        'transmission_name_cn',
+        'transmission_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
     
     // Create type_transmissions if provided
     if (type_transmissions.length > 0) {
       for (const typeTransmission of type_transmissions) {
         // First create or find existing type_transmission
-        let [existingTypeTransmission] = await trx(TYPE_TRANSMISSION_TABLE)
+        let existingTypeTransmission = await trx(TYPE_TRANSMISSION_TABLE)
+          .select([
+            'type_transmission_id',
+            'type_transmission_name_en',
+            'type_transmission_name_cn',
+            'type_transmission_description',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'updated_by',
+            'deleted_at',
+            'deleted_by',
+            'is_delete'
+          ])
           .where({
             type_transmission_name_en: typeTransmission.type_transmission_name_en,
             type_transmission_name_cn: typeTransmission.type_transmission_name_cn,
             is_delete: false
           })
-          .returning('*');
+          .first();
         
         if (!existingTypeTransmission) {
           [existingTypeTransmission] = await trx(TYPE_TRANSMISSION_TABLE)
@@ -161,7 +224,19 @@ const create = async (data, userId) => {
               created_at: db.fn.now(),
               updated_at: db.fn.now()
             })
-            .returning('*');
+            .returning([
+              'type_transmission_id',
+              'type_transmission_name_en',
+              'type_transmission_name_cn',
+              'type_transmission_description',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+              'deleted_by',
+              'is_delete'
+            ]);
         }
         
         // Create relation
@@ -197,7 +272,19 @@ const update = async (id, data, userId) => {
         updated_by: userId,
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'transmission_id',
+        'transmission_name_en',
+        'transmission_name_cn',
+        'transmission_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
     
     if (!transmission) {
       return null;
@@ -219,13 +306,26 @@ const update = async (id, data, userId) => {
       // Create new relations
       for (const typeTransmission of type_transmissions) {
         // First create or find existing type_transmission
-        let [existingTypeTransmission] = await trx(TYPE_TRANSMISSION_TABLE)
+        let existingTypeTransmission = await trx(TYPE_TRANSMISSION_TABLE)
+          .select([
+            'type_transmission_id',
+            'type_transmission_name_en',
+            'type_transmission_name_cn',
+            'type_transmission_description',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'updated_by',
+            'deleted_at',
+            'deleted_by',
+            'is_delete'
+          ])
           .where({
             type_transmission_name_en: typeTransmission.type_transmission_name_en,
             type_transmission_name_cn: typeTransmission.type_transmission_name_cn,
             is_delete: false
           })
-          .returning('*');
+          .first();
         
         if (!existingTypeTransmission) {
           [existingTypeTransmission] = await trx(TYPE_TRANSMISSION_TABLE)
@@ -236,7 +336,19 @@ const update = async (id, data, userId) => {
               created_at: db.fn.now(),
               updated_at: db.fn.now()
             })
-            .returning('*');
+            .returning([
+              'type_transmission_id',
+              'type_transmission_name_en',
+              'type_transmission_name_cn',
+              'type_transmission_description',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+              'deleted_by',
+              'is_delete'
+            ]);
         }
         
         // Create relation
@@ -272,7 +384,19 @@ const remove = async (id, userId) => {
         updated_by: userId,
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'transmission_id',
+        'transmission_name_en',
+        'transmission_name_cn',
+        'transmission_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
     
     if (!transmission) {
       return null;
@@ -309,7 +433,19 @@ const restore = async (id, userId) => {
         updated_by: userId,
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'transmission_id',
+        'transmission_name_en',
+        'transmission_name_cn',
+        'transmission_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
     
     if (!transmission) {
       return null;

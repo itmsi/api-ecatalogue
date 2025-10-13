@@ -12,7 +12,17 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   
   let query = db(TABLE_NAME)
     .select(
-      `${TABLE_NAME}.*`,
+      `${TABLE_NAME}.cabines_id`,
+      `${TABLE_NAME}.cabines_name_en`,
+      `${TABLE_NAME}.cabines_name_cn`,
+      `${TABLE_NAME}.cabines_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`,
       db.raw(`json_agg(
         CASE 
           WHEN ${TYPE_CABINES_TABLE}.type_cabine_id IS NOT NULL 
@@ -80,7 +90,17 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
 const findById = async (id) => {
   const result = await db(TABLE_NAME)
     .select(
-      `${TABLE_NAME}.*`,
+      `${TABLE_NAME}.cabines_id`,
+      `${TABLE_NAME}.cabines_name_en`,
+      `${TABLE_NAME}.cabines_name_cn`,
+      `${TABLE_NAME}.cabines_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`,
       db.raw(`json_agg(
         CASE 
           WHEN ${TYPE_CABINES_TABLE}.type_cabine_id IS NOT NULL 
@@ -133,7 +153,19 @@ const create = async (data, userId) => {
         created_at: db.fn.now(),
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'cabines_id',
+        'cabines_name_en',
+        'cabines_name_cn',
+        'cabines_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Insert type_cabines data if provided
     if (type_cabines && type_cabines.length > 0) {
@@ -150,7 +182,19 @@ const create = async (data, userId) => {
 
       const insertedTypeCabines = await trx(TYPE_CABINES_TABLE)
         .insert(typeCabinesData)
-        .returning('*');
+        .returning([
+          'type_cabine_id',
+          'type_cabine_name_en',
+          'type_cabine_name_cn',
+          'type_cabine_description',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+          'deleted_by',
+          'is_delete'
+        ]);
 
       // Create relations between cabines and type_cabines
       const relationData = Array.isArray(insertedTypeCabines) 
@@ -194,7 +238,19 @@ const update = async (id, data, userId) => {
         updated_by: userId,
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'cabines_id',
+        'cabines_name_en',
+        'cabines_name_cn',
+        'cabines_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     if (!cabinesResult) {
       return null;
@@ -220,7 +276,19 @@ const update = async (id, data, userId) => {
 
       const insertedTypeCabines = await trx(TYPE_CABINES_TABLE)
         .insert(typeCabinesData)
-        .returning('*');
+        .returning([
+          'type_cabine_id',
+          'type_cabine_name_en',
+          'type_cabine_name_cn',
+          'type_cabine_description',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+          'deleted_by',
+          'is_delete'
+        ]);
 
       // Create relations between cabines and type_cabines
       const relationData = Array.isArray(insertedTypeCabines) 
@@ -263,7 +331,19 @@ const remove = async (id, userId) => {
         updated_at: db.fn.now(),
         updated_by: userId
       })
-      .returning('*');
+      .returning([
+        'cabines_id',
+        'cabines_name_en',
+        'cabines_name_cn',
+        'cabines_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Soft delete relations
     await trx(RELATION_TABLE)
@@ -294,7 +374,19 @@ const restore = async (id, userId) => {
         updated_at: db.fn.now(),
         updated_by: userId
       })
-      .returning('*');
+      .returning([
+        'cabines_id',
+        'cabines_name_en',
+        'cabines_name_cn',
+        'cabines_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Restore relations
     await trx(RELATION_TABLE)

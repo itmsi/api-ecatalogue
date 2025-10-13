@@ -12,7 +12,17 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   
   let query = db(TABLE_NAME)
     .select(
-      `${TABLE_NAME}.*`,
+      `${TABLE_NAME}.steering_id`,
+      `${TABLE_NAME}.steering_name_en`,
+      `${TABLE_NAME}.steering_name_cn`,
+      `${TABLE_NAME}.steering_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`,
       db.raw(`json_agg(
         CASE 
           WHEN ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL 
@@ -33,7 +43,19 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
       this.where(`${RELATION_TABLE}.deleted_at`, null)
         .orWhereNull(`${RELATION_TABLE}.deleted_at`);
     })
-    .groupBy(`${TABLE_NAME}.steering_id`)
+    .groupBy(
+      `${TABLE_NAME}.steering_id`,
+      `${TABLE_NAME}.steering_name_en`,
+      `${TABLE_NAME}.steering_name_cn`,
+      `${TABLE_NAME}.steering_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`
+    )
     .orderBy(`${TABLE_NAME}.${sort_by}`, sort_order)
     .limit(limit)
     .offset(offset);
@@ -80,7 +102,17 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
 const findById = async (id) => {
   const result = await db(TABLE_NAME)
     .select(
-      `${TABLE_NAME}.*`,
+      `${TABLE_NAME}.steering_id`,
+      `${TABLE_NAME}.steering_name_en`,
+      `${TABLE_NAME}.steering_name_cn`,
+      `${TABLE_NAME}.steering_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`,
       db.raw(`json_agg(
         CASE 
           WHEN ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL 
@@ -102,7 +134,19 @@ const findById = async (id) => {
       this.where(`${RELATION_TABLE}.deleted_at`, null)
         .orWhereNull(`${RELATION_TABLE}.deleted_at`);
     })
-    .groupBy(`${TABLE_NAME}.steering_id`)
+    .groupBy(
+      `${TABLE_NAME}.steering_id`,
+      `${TABLE_NAME}.steering_name_en`,
+      `${TABLE_NAME}.steering_name_cn`,
+      `${TABLE_NAME}.steering_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`
+    )
     .first();
 
   return result;
@@ -113,6 +157,19 @@ const findById = async (id) => {
  */
 const findOne = async (conditions) => {
   return await db(TABLE_NAME)
+    .select(
+      'steering_id',
+      'steering_name_en',
+      'steering_name_cn',
+      'steering_description',
+      'created_at',
+      'created_by',
+      'updated_at',
+      'updated_by',
+      'deleted_at',
+      'deleted_by',
+      'is_delete'
+    )
     .where({ ...conditions, deleted_at: null })
     .first();
 };
@@ -133,7 +190,19 @@ const create = async (data, userId) => {
         created_at: db.fn.now(),
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'steering_id',
+        'steering_name_en',
+        'steering_name_cn',
+        'steering_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Insert type_steerings data if provided
     if (type_steerings && type_steerings.length > 0) {
@@ -150,7 +219,19 @@ const create = async (data, userId) => {
 
       const insertedTypeSteerings = await trx(TYPE_STEERINGS_TABLE)
         .insert(typeSteeringsData)
-        .returning('*');
+        .returning([
+          'type_steering_id',
+          'type_steering_name_en',
+          'type_steering_name_cn',
+          'type_steering_description',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+          'deleted_by',
+          'is_delete'
+        ]);
 
       // Create relations between steering and type_steerings
       const relationData = Array.isArray(insertedTypeSteerings) 
@@ -194,7 +275,19 @@ const update = async (id, data, userId) => {
         updated_by: userId,
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'steering_id',
+        'steering_name_en',
+        'steering_name_cn',
+        'steering_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     if (!steeringResult) {
       return null;
@@ -220,7 +313,19 @@ const update = async (id, data, userId) => {
 
       const insertedTypeSteerings = await trx(TYPE_STEERINGS_TABLE)
         .insert(typeSteeringsData)
-        .returning('*');
+        .returning([
+          'type_steering_id',
+          'type_steering_name_en',
+          'type_steering_name_cn',
+          'type_steering_description',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+          'deleted_by',
+          'is_delete'
+        ]);
 
       // Create relations between steering and type_steerings
       const relationData = Array.isArray(insertedTypeSteerings) 
@@ -263,7 +368,19 @@ const remove = async (id, userId) => {
         updated_at: db.fn.now(),
         updated_by: userId
       })
-      .returning('*');
+      .returning([
+        'steering_id',
+        'steering_name_en',
+        'steering_name_cn',
+        'steering_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Soft delete relations
     await trx(RELATION_TABLE)
@@ -294,7 +411,19 @@ const restore = async (id, userId) => {
         updated_at: db.fn.now(),
         updated_by: userId
       })
-      .returning('*');
+      .returning([
+        'steering_id',
+        'steering_name_en',
+        'steering_name_cn',
+        'steering_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Restore relations
     await trx(RELATION_TABLE)

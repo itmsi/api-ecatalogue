@@ -12,7 +12,17 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   
   let query = db(TABLE_NAME)
     .select(
-      `${TABLE_NAME}.*`,
+      `${TABLE_NAME}.axel_id`,
+      `${TABLE_NAME}.axel_name_en`,
+      `${TABLE_NAME}.axel_name_cn`,
+      `${TABLE_NAME}.axel_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`,
       db.raw(`json_agg(
         CASE 
           WHEN ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL 
@@ -80,7 +90,17 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
 const findById = async (id) => {
   const result = await db(TABLE_NAME)
     .select(
-      `${TABLE_NAME}.*`,
+      `${TABLE_NAME}.axel_id`,
+      `${TABLE_NAME}.axel_name_en`,
+      `${TABLE_NAME}.axel_name_cn`,
+      `${TABLE_NAME}.axel_description`,
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.created_by`,
+      `${TABLE_NAME}.updated_at`,
+      `${TABLE_NAME}.updated_by`,
+      `${TABLE_NAME}.deleted_at`,
+      `${TABLE_NAME}.deleted_by`,
+      `${TABLE_NAME}.is_delete`,
       db.raw(`json_agg(
         CASE 
           WHEN ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL 
@@ -133,7 +153,19 @@ const create = async (data, userId) => {
         created_at: db.fn.now(),
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'axel_id',
+        'axel_name_en',
+        'axel_name_cn',
+        'axel_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Insert type_axels data if provided
     if (type_axels && type_axels.length > 0) {
@@ -150,7 +182,19 @@ const create = async (data, userId) => {
 
       const insertedTypeAxels = await trx(TYPE_AXELS_TABLE)
         .insert(typeAxelsData)
-        .returning('*');
+        .returning([
+          'type_axel_id',
+          'type_axel_name_en',
+          'type_axel_name_cn',
+          'type_axel_description',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+          'deleted_by',
+          'is_delete'
+        ]);
 
       // Create relations between axels and type_axels
       const relationData = Array.isArray(insertedTypeAxels) 
@@ -194,7 +238,19 @@ const update = async (id, data, userId) => {
         updated_by: userId,
         updated_at: db.fn.now()
       })
-      .returning('*');
+      .returning([
+        'axel_id',
+        'axel_name_en',
+        'axel_name_cn',
+        'axel_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     if (!axelResult) {
       return null;
@@ -220,7 +276,19 @@ const update = async (id, data, userId) => {
 
       const insertedTypeAxels = await trx(TYPE_AXELS_TABLE)
         .insert(typeAxelsData)
-        .returning('*');
+        .returning([
+          'type_axel_id',
+          'type_axel_name_en',
+          'type_axel_name_cn',
+          'type_axel_description',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+          'deleted_by',
+          'is_delete'
+        ]);
 
       // Create relations between axels and type_axels
       const relationData = Array.isArray(insertedTypeAxels) 
@@ -264,7 +332,19 @@ const remove = async (id, userId) => {
         updated_by: userId,
         is_delete: true
       })
-      .returning('*');
+      .returning([
+        'axel_id',
+        'axel_name_en',
+        'axel_name_cn',
+        'axel_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Soft delete relations
     await trx(RELATION_TABLE)
@@ -297,7 +377,19 @@ const restore = async (id, userId) => {
         updated_by: userId,
         is_delete: false
       })
-      .returning('*');
+      .returning([
+        'axel_id',
+        'axel_name_en',
+        'axel_name_cn',
+        'axel_description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at',
+        'deleted_by',
+        'is_delete'
+      ]);
 
     // Restore relations
     await trx(RELATION_TABLE)
