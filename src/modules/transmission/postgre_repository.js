@@ -32,6 +32,29 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
     .orderBy(sortField, sortDirection)
     .limit(limit)
     .offset(offset);
+  
+  // Get related type_transmissions for each transmission
+  const transmissionsWithTypes = await Promise.all(
+    data.map(async (transmission) => {
+      const typeTransmissions = await db(RELATION_TABLE)
+        .select([
+          'type_transmissions.type_transmission_id',
+          'type_transmissions.type_transmission_name_en',
+          'type_transmissions.type_transmission_name_cn'
+        ])
+        .join(TYPE_TRANSMISSION_TABLE, 'transmissions_type_transmissions.type_transmission_id', 'type_transmissions.type_transmission_id')
+        .where({ 
+          'transmissions_type_transmissions.transmission_id': transmission.transmission_id,
+          'transmissions_type_transmissions.is_delete': false,
+          'type_transmissions.is_delete': false
+        });
+      
+      return {
+        ...transmission,
+        type_transmissions: typeTransmissions
+      };
+    })
+  );
     
   // Get total count for pagination
   let countQuery = db(TABLE_NAME)
@@ -48,7 +71,7 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   const total = await countQuery.count('transmission_id as count').first();
     
   return {
-    items: data,
+    items: transmissionsWithTypes,
     pagination: {
       page: parseInt(page),
       limit: parseInt(limit),
