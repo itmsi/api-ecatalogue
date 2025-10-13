@@ -11,15 +11,27 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   const offset = (page - 1) * limit;
   
   let query = db(TABLE_NAME)
-    .select('*')
-    .where({ is_delete: false });
+    .select(
+      'engines.engines_id',
+      'engines.engines_name_en',
+      'engines.engines_name_cn',
+      'engines.engines_description',
+      'engines.created_at',
+      'engines.created_by',
+      'engines.updated_at',
+      'engines.updated_by',
+      'engines.deleted_at',
+      'engines.deleted_by',
+      'engines.is_delete'
+    )
+    .where({ 'engines.is_delete': false });
     
   // Add search functionality
   if (search && search.trim() !== '') {
     query = query.where(function() {
-      this.whereILike('engines_name_en', `%${search}%`)
-          .orWhereILike('engines_name_cn', `%${search}%`)
-          .orWhereILike('engines_description', `%${search}%`);
+      this.whereILike('engines.engines_name_en', `%${search}%`)
+          .orWhereILike('engines.engines_name_cn', `%${search}%`)
+          .orWhereILike('engines.engines_description', `%${search}%`);
     });
   }
   
@@ -28,7 +40,7 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   const sortColumn = validSortColumns.includes(sort_by) ? sort_by : 'created_at';
   const sortDirection = sort_order.toLowerCase() === 'asc' ? 'asc' : 'desc';
   
-  query = query.orderBy(sortColumn, sortDirection)
+  query = query.orderBy(`engines.${sortColumn}`, sortDirection)
                .limit(limit)
                .offset(offset);
     
@@ -59,17 +71,17 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   
   // Get total count for pagination
   let countQuery = db(TABLE_NAME)
-    .where({ is_delete: false });
+    .where({ 'engines.is_delete': false });
     
   if (search && search.trim() !== '') {
     countQuery = countQuery.where(function() {
-      this.whereILike('engines_name_en', `%${search}%`)
-          .orWhereILike('engines_name_cn', `%${search}%`)
-          .orWhereILike('engines_description', `%${search}%`);
+      this.whereILike('engines.engines_name_en', `%${search}%`)
+          .orWhereILike('engines.engines_name_cn', `%${search}%`)
+          .orWhereILike('engines.engines_description', `%${search}%`);
     });
   }
   
-  const total = await countQuery.count('engines_id as count').first();
+  const total = await countQuery.count('engines.engines_id as count').first();
     
   return {
     items: enginesWithTypes,
@@ -87,7 +99,20 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
  */
 const findById = async (id) => {
   const engine = await db(TABLE_NAME)
-    .where({ engines_id: id, is_delete: false })
+    .select(
+      'engines.engines_id',
+      'engines.engines_name_en',
+      'engines.engines_name_cn',
+      'engines.engines_description',
+      'engines.created_at',
+      'engines.created_by',
+      'engines.updated_at',
+      'engines.updated_by',
+      'engines.deleted_at',
+      'engines.deleted_by',
+      'engines.is_delete'
+    )
+    .where({ 'engines.engines_id': id, 'engines.is_delete': false })
     .first();
     
   if (!engine) {
@@ -119,8 +144,27 @@ const findById = async (id) => {
  * Find by custom condition
  */
 const findOne = async (conditions) => {
+  // Add table prefix to conditions
+  const prefixedConditions = {};
+  Object.keys(conditions).forEach(key => {
+    prefixedConditions[`engines.${key}`] = conditions[key];
+  });
+  
   return await db(TABLE_NAME)
-    .where({ ...conditions, is_delete: false })
+    .select(
+      'engines.engines_id',
+      'engines.engines_name_en',
+      'engines.engines_name_cn',
+      'engines.engines_description',
+      'engines.created_at',
+      'engines.created_by',
+      'engines.updated_at',
+      'engines.updated_by',
+      'engines.deleted_at',
+      'engines.deleted_by',
+      'engines.is_delete'
+    )
+    .where({ ...prefixedConditions, 'engines.is_delete': false })
     .first();
 };
 
@@ -152,12 +196,24 @@ const create = async (data, userId) => {
       for (const typeEngine of type_engines) {
         // Create or find existing type_engine
         let [typeEngineRecord] = await trx(TYPE_ENGINES_TABLE)
+          .select(
+            'type_engines.type_engine_id',
+            'type_engines.type_engine_name_en',
+            'type_engines.type_engine_name_cn',
+            'type_engines.type_engine_description',
+            'type_engines.created_at',
+            'type_engines.created_by',
+            'type_engines.updated_at',
+            'type_engines.updated_by',
+            'type_engines.deleted_at',
+            'type_engines.deleted_by',
+            'type_engines.is_delete'
+          )
           .where({
-            type_engine_name_en: typeEngine.type_engine_name_en,
-            type_engine_name_cn: typeEngine.type_engine_name_cn,
-            is_delete: false
-          })
-          .select('*');
+            'type_engines.type_engine_name_en': typeEngine.type_engine_name_en,
+            'type_engines.type_engine_name_cn': typeEngine.type_engine_name_cn,
+            'type_engines.is_delete': false
+          });
           
         if (!typeEngineRecord) {
           [typeEngineRecord] = await trx(TYPE_ENGINES_TABLE)
@@ -212,7 +268,7 @@ const update = async (id, data, userId) => {
   try {
     // Update engine
     const [engine] = await trx(TABLE_NAME)
-      .where({ engines_id: id, is_delete: false })
+      .where({ 'engines.engines_id': id, 'engines.is_delete': false })
       .update({
         ...engineData,
         updated_by: userId,
@@ -229,7 +285,7 @@ const update = async (id, data, userId) => {
     if (type_engines !== undefined) {
       // Soft delete existing relations
       await trx(RELATION_TABLE)
-        .where({ engines_id: id, is_delete: false })
+        .where({ 'engines_type_engines.engines_id': id, 'engines_type_engines.is_delete': false })
         .update({
           is_delete: true,
           deleted_at: db.fn.now(),
@@ -243,12 +299,24 @@ const update = async (id, data, userId) => {
         for (const typeEngine of type_engines) {
           // Create or find existing type_engine
           let [typeEngineRecord] = await trx(TYPE_ENGINES_TABLE)
+            .select(
+              'type_engines.type_engine_id',
+              'type_engines.type_engine_name_en',
+              'type_engines.type_engine_name_cn',
+              'type_engines.type_engine_description',
+              'type_engines.created_at',
+              'type_engines.created_by',
+              'type_engines.updated_at',
+              'type_engines.updated_by',
+              'type_engines.deleted_at',
+              'type_engines.deleted_by',
+              'type_engines.is_delete'
+            )
             .where({
-              type_engine_name_en: typeEngine.type_engine_name_en,
-              type_engine_name_cn: typeEngine.type_engine_name_cn,
-              is_delete: false
-            })
-            .select('*');
+              'type_engines.type_engine_name_en': typeEngine.type_engine_name_en,
+              'type_engines.type_engine_name_cn': typeEngine.type_engine_name_cn,
+              'type_engines.is_delete': false
+            });
             
           if (!typeEngineRecord) {
             [typeEngineRecord] = await trx(TYPE_ENGINES_TABLE)
@@ -302,7 +370,7 @@ const remove = async (id, userId) => {
   try {
     // Soft delete engine
     const [engine] = await trx(TABLE_NAME)
-      .where({ engines_id: id, is_delete: false })
+      .where({ 'engines.engines_id': id, 'engines.is_delete': false })
       .update({
         is_delete: true,
         deleted_at: db.fn.now(),
@@ -318,7 +386,7 @@ const remove = async (id, userId) => {
     
     // Soft delete relations
     await trx(RELATION_TABLE)
-      .where({ engines_id: id, is_delete: false })
+      .where({ 'engines_type_engines.engines_id': id, 'engines_type_engines.is_delete': false })
       .update({
         is_delete: true,
         deleted_at: db.fn.now(),
@@ -344,7 +412,7 @@ const restore = async (id, userId) => {
   try {
     // Restore engine
     const [engine] = await trx(TABLE_NAME)
-      .where({ engines_id: id, is_delete: true })
+      .where({ 'engines.engines_id': id, 'engines.is_delete': true })
       .update({
         is_delete: false,
         deleted_at: null,
@@ -361,7 +429,7 @@ const restore = async (id, userId) => {
     
     // Restore relations
     await trx(RELATION_TABLE)
-      .where({ engines_id: id, is_delete: true })
+      .where({ 'engines_type_engines.engines_id': id, 'engines_type_engines.is_delete': true })
       .update({
         is_delete: false,
         deleted_at: null,
@@ -389,12 +457,12 @@ const hardDelete = async (id) => {
   try {
     // Delete relations first
     await trx(RELATION_TABLE)
-      .where({ engines_id: id })
+      .where({ 'engines_type_engines.engines_id': id })
       .del();
     
     // Delete engine
     const result = await trx(TABLE_NAME)
-      .where({ engines_id: id })
+      .where({ 'engines.engines_id': id })
       .del();
     
     await trx.commit();
