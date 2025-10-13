@@ -34,6 +34,29 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
     
   const data = await query;
   
+  // Get related type_engines for each engine
+  const enginesWithTypes = await Promise.all(
+    data.map(async (engine) => {
+      const typeEngines = await db(RELATION_TABLE)
+        .select([
+          'type_engines.type_engine_id',
+          'type_engines.type_engine_name_en',
+          'type_engines.type_engine_name_cn'
+        ])
+        .join(TYPE_ENGINES_TABLE, 'engines_type_engines.type_engine_id', 'type_engines.type_engine_id')
+        .where({ 
+          'engines_type_engines.engines_id': engine.engines_id,
+          'engines_type_engines.is_delete': false,
+          'type_engines.is_delete': false
+        });
+      
+      return {
+        ...engine,
+        type_engines: typeEngines
+      };
+    })
+  );
+  
   // Get total count for pagination
   let countQuery = db(TABLE_NAME)
     .where({ is_delete: false });
@@ -49,7 +72,7 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
   const total = await countQuery.count('engines_id as count').first();
     
   return {
-    items: data,
+    items: enginesWithTypes,
     pagination: {
       page: parseInt(page),
       limit: parseInt(limit),
