@@ -136,6 +136,46 @@ const productionSchemas = {
       }
     }
   },
+  ProductionDetailInput: {
+    type: 'object',
+    properties: {
+      production_detail_description: {
+        type: 'string',
+        description: 'Production detail description',
+        example: 'Engine and transmission configuration'
+      },
+      engine_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Engine reference',
+        example: '123e4567-e89b-12d3-a456-426614174001'
+      },
+      steering_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Steering reference',
+        example: '123e4567-e89b-12d3-a456-426614174002'
+      },
+      cabine_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Cabine reference',
+        example: '123e4567-e89b-12d3-a456-426614174003'
+      },
+      axle_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Axle reference',
+        example: '123e4567-e89b-12d3-a456-426614174004'
+      },
+      transmission_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Transmission reference',
+        example: '123e4567-e89b-12d3-a456-426614174005'
+      }
+    }
+  },
   ProductionInput: {
     type: 'object',
     properties: {
@@ -158,9 +198,10 @@ const productionSchemas = {
         example: '丰田凯美瑞 2024'
       },
       production_sequence_number: {
-        type: 'integer',
+        type: 'string',
+        maxLength: 50,
         description: 'Production sequence number',
-        example: 1001
+        example: '1001'
       },
       production_month: {
         type: 'string',
@@ -180,33 +221,52 @@ const productionSchemas = {
         description: 'Production description',
         example: 'High-quality production with premium materials'
       },
-      location_id: {
+      production_location_id: {
         type: 'string',
         format: 'uuid',
         description: 'Location reference',
         example: '123e4567-e89b-12d3-a456-426614174001'
       },
-      brand_id: {
+      production_brand_id: {
         type: 'string',
         format: 'uuid',
         description: 'Brand reference',
         example: '123e4567-e89b-12d3-a456-426614174002'
       },
-      driver_type_id: {
+      production_driver_type_id: {
         type: 'string',
-        format: 'uuid'
+        format: 'uuid',
+        description: 'Driver type reference',
+        example: '123e4567-e89b-12d3-a456-426614174003'
       },
-      vehicle_weight_id: {
+      production_vehicle_weight_id: {
         type: 'string',
         format: 'uuid',
         description: 'Vehicle weight reference',
         example: '123e4567-e89b-12d3-a456-426614174004'
       },
-      world_manufacturing_plant_id: {
+      production_world_manufacturing_plant_id: {
         type: 'string',
         format: 'uuid',
         description: 'World manufacturing plant reference',
         example: '123e4567-e89b-12d3-a456-426614174005'
+      },
+      data_details: {
+        type: 'array',
+        description: 'Array of production details (engine, steering, cabine, axle, transmission)',
+        items: {
+          $ref: '#/components/schemas/ProductionDetailInput'
+        },
+        example: [
+          {
+            "production_detail_description": "Configuration 1",
+            "engine_id": "123e4567-e89b-12d3-a456-426614174001",
+            "steering_id": "123e4567-e89b-12d3-a456-426614174002",
+            "cabine_id": "123e4567-e89b-12d3-a456-426614174003",
+            "axle_id": "123e4567-e89b-12d3-a456-426614174004",
+            "transmission_id": "123e4567-e89b-12d3-a456-426614174005"
+          }
+        ]
       }
     }
   },

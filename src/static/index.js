@@ -33,7 +33,7 @@ const servers = [
 // const vehicleWeightsSchema = require('./schema/vehicleWeight');
 // const brandsSchema = require('./schema/brands');
 // const worldManufacturingPlantSchema = require('./schema/worldManufacturingPlant');
-// const productionSchema = require('./schema/production');
+const productionSchema = require('./schema/production');
 // const sidebarSchema = require('./schema/sidebar');
 const cabinesSchema = require('./schema/cabines');
 
@@ -48,7 +48,7 @@ const cabinesSchema = require('./schema/cabines');
 // const vehicleWeightsPaths = require('./path/vehicleWeight');
 // const brandsPaths = require('./path/brands');
 // const worldManufacturingPlantPaths = require('./path/worldManufacturingPlant');
-// const productionPaths = require('./path/production');
+const productionPaths = require('./path/production');
 // const sidebarPaths = require('./path/sidebar');
 const typeCabineSchema = require('./schema/typeCabine');
 const typeCabinePaths = require('./path/typeCabine');
@@ -90,7 +90,7 @@ const schemas = {
   // ...vehicleWeightsSchema,
   // ...brandsSchema,
   // ...worldManufacturingPlantSchema,
-  // ...productionSchema,
+  ...productionSchema,
   // ...sidebarSchema,
   ...typeCabineSchema,
   ...cabinesSchema,
@@ -121,7 +121,7 @@ const paths = {
   // ...vehicleWeightsPaths,
   // ...brandsPaths,
   // ...worldManufacturingPlantPaths,
-  // ...productionPaths,
+  ...productionPaths,
   // ...sidebarPaths,
   ...typeCabinePaths,
   ...cabinesPaths,
