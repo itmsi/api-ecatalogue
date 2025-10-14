@@ -23,18 +23,21 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
       `${TABLE_NAME}.deleted_at`,
       `${TABLE_NAME}.deleted_by`,
       `${TABLE_NAME}.is_delete`,
-      db.raw(`json_agg(
-        CASE 
-          WHEN ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL 
-          THEN json_build_object(
-            'type_axel_id', ${TYPE_AXELS_TABLE}.type_axel_id,
-            'type_axel_name_en', ${TYPE_AXELS_TABLE}.type_axel_name_en,
-            'type_axel_name_cn', ${TYPE_AXELS_TABLE}.type_axel_name_cn,
-            'type_axel_description', ${TYPE_AXELS_TABLE}.type_axel_description
-          )
-          ELSE NULL
-        END
-      ) FILTER (WHERE ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL) as type_axels`)
+      db.raw(`COALESCE(
+        json_agg(
+          CASE 
+            WHEN ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL 
+            THEN json_build_object(
+              'type_axel_id', ${TYPE_AXELS_TABLE}.type_axel_id,
+              'type_axel_name_en', ${TYPE_AXELS_TABLE}.type_axel_name_en,
+              'type_axel_name_cn', ${TYPE_AXELS_TABLE}.type_axel_name_cn,
+              'type_axel_description', ${TYPE_AXELS_TABLE}.type_axel_description
+            )
+            ELSE NULL
+          END
+        ) FILTER (WHERE ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL),
+        '[]'::json
+      ) as type_axels`)
     )
     .leftJoin(RELATION_TABLE, `${TABLE_NAME}.axel_id`, `${RELATION_TABLE}.axel_id`)
     .leftJoin(TYPE_AXELS_TABLE, `${RELATION_TABLE}.type_axel_id`, `${TYPE_AXELS_TABLE}.type_axel_id`)
@@ -101,18 +104,21 @@ const findById = async (id) => {
       `${TABLE_NAME}.deleted_at`,
       `${TABLE_NAME}.deleted_by`,
       `${TABLE_NAME}.is_delete`,
-      db.raw(`json_agg(
-        CASE 
-          WHEN ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL 
-          THEN json_build_object(
-            'type_axel_id', ${TYPE_AXELS_TABLE}.type_axel_id,
-            'type_axel_name_en', ${TYPE_AXELS_TABLE}.type_axel_name_en,
-            'type_axel_name_cn', ${TYPE_AXELS_TABLE}.type_axel_name_cn,
-            'type_axel_description', ${TYPE_AXELS_TABLE}.type_axel_description
-          )
-          ELSE NULL
-        END
-      ) FILTER (WHERE ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL) as type_axels`)
+      db.raw(`COALESCE(
+        json_agg(
+          CASE 
+            WHEN ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL 
+            THEN json_build_object(
+              'type_axel_id', ${TYPE_AXELS_TABLE}.type_axel_id,
+              'type_axel_name_en', ${TYPE_AXELS_TABLE}.type_axel_name_en,
+              'type_axel_name_cn', ${TYPE_AXELS_TABLE}.type_axel_name_cn,
+              'type_axel_description', ${TYPE_AXELS_TABLE}.type_axel_description
+            )
+            ELSE NULL
+          END
+        ) FILTER (WHERE ${TYPE_AXELS_TABLE}.type_axel_id IS NOT NULL),
+        '[]'::json
+      ) as type_axels`)
     )
     .leftJoin(RELATION_TABLE, `${TABLE_NAME}.axel_id`, `${RELATION_TABLE}.axel_id`)
     .leftJoin(TYPE_AXELS_TABLE, `${RELATION_TABLE}.type_axel_id`, `${TYPE_AXELS_TABLE}.type_axel_id`)

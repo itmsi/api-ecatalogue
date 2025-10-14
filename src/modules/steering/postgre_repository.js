@@ -23,18 +23,21 @@ const findAll = async (page = 1, limit = 10, search = '', sort_by = 'created_at'
       `${TABLE_NAME}.deleted_at`,
       `${TABLE_NAME}.deleted_by`,
       `${TABLE_NAME}.is_delete`,
-      db.raw(`json_agg(
-        CASE 
-          WHEN ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL 
-          THEN json_build_object(
-            'type_steering_id', ${TYPE_STEERINGS_TABLE}.type_steering_id,
-            'type_steering_name_en', ${TYPE_STEERINGS_TABLE}.type_steering_name_en,
-            'type_steering_name_cn', ${TYPE_STEERINGS_TABLE}.type_steering_name_cn,
-            'type_steering_description', ${TYPE_STEERINGS_TABLE}.type_steering_description
-          )
-          ELSE NULL
-        END
-      ) FILTER (WHERE ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL) as type_steerings`)
+      db.raw(`COALESCE(
+        json_agg(
+          CASE 
+            WHEN ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL 
+            THEN json_build_object(
+              'type_steering_id', ${TYPE_STEERINGS_TABLE}.type_steering_id,
+              'type_steering_name_en', ${TYPE_STEERINGS_TABLE}.type_steering_name_en,
+              'type_steering_name_cn', ${TYPE_STEERINGS_TABLE}.type_steering_name_cn,
+              'type_steering_description', ${TYPE_STEERINGS_TABLE}.type_steering_description
+            )
+            ELSE NULL
+          END
+        ) FILTER (WHERE ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL),
+        '[]'::json
+      ) as type_steerings`)
     )
     .leftJoin(RELATION_TABLE, `${TABLE_NAME}.steering_id`, `${RELATION_TABLE}.steering_id`)
     .leftJoin(TYPE_STEERINGS_TABLE, `${RELATION_TABLE}.type_steering_id`, `${TYPE_STEERINGS_TABLE}.type_steering_id`)
@@ -113,18 +116,21 @@ const findById = async (id) => {
       `${TABLE_NAME}.deleted_at`,
       `${TABLE_NAME}.deleted_by`,
       `${TABLE_NAME}.is_delete`,
-      db.raw(`json_agg(
-        CASE 
-          WHEN ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL 
-          THEN json_build_object(
-            'type_steering_id', ${TYPE_STEERINGS_TABLE}.type_steering_id,
-            'type_steering_name_en', ${TYPE_STEERINGS_TABLE}.type_steering_name_en,
-            'type_steering_name_cn', ${TYPE_STEERINGS_TABLE}.type_steering_name_cn,
-            'type_steering_description', ${TYPE_STEERINGS_TABLE}.type_steering_description
-          )
-          ELSE NULL
-        END
-      ) FILTER (WHERE ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL) as type_steerings`)
+      db.raw(`COALESCE(
+        json_agg(
+          CASE 
+            WHEN ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL 
+            THEN json_build_object(
+              'type_steering_id', ${TYPE_STEERINGS_TABLE}.type_steering_id,
+              'type_steering_name_en', ${TYPE_STEERINGS_TABLE}.type_steering_name_en,
+              'type_steering_name_cn', ${TYPE_STEERINGS_TABLE}.type_steering_name_cn,
+              'type_steering_description', ${TYPE_STEERINGS_TABLE}.type_steering_description
+            )
+            ELSE NULL
+          END
+        ) FILTER (WHERE ${TYPE_STEERINGS_TABLE}.type_steering_id IS NOT NULL),
+        '[]'::json
+      ) as type_steerings`)
     )
     .leftJoin(RELATION_TABLE, `${TABLE_NAME}.steering_id`, `${RELATION_TABLE}.steering_id`)
     .leftJoin(TYPE_STEERINGS_TABLE, `${RELATION_TABLE}.type_steering_id`, `${TYPE_STEERINGS_TABLE}.type_steering_id`)
