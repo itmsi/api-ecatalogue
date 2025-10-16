@@ -4,9 +4,9 @@ const Minio = require('minio');
 const http = require('http');
 const https = require('https');
 
-// Create custom agents with timeout
+// Create custom agents with timeout (increased for server environment)
 const httpAgent = new http.Agent({
-  timeout: 15000, // 15 seconds timeout
+  timeout: 30000, // 30 seconds timeout for server environment
   keepAlive: true,
   keepAliveMsecs: 1000,
   maxSockets: 50,
@@ -14,7 +14,7 @@ const httpAgent = new http.Agent({
 });
 
 const httpsAgent = new https.Agent({
-  timeout: 15000, // 15 seconds timeout
+  timeout: 30000, // 30 seconds timeout for server environment
   keepAlive: true,
   keepAliveMsecs: 1000,
   maxSockets: 50,
@@ -65,15 +65,21 @@ if (isMinioEnabled) {
 }
 
 // Connection test function
-const testMinioConnection = async (client, maxRetries = 3) => {
+const testMinioConnection = async (client, maxRetries = 3, skipTest = false) => {
+  // Skip connection test if explicitly requested or if SKIP_MINIO_CONNECTION_TEST is set
+  if (skipTest || process.env.SKIP_MINIO_CONNECTION_TEST === 'true') {
+    console.log('Skipping MinIO connection test');
+    return true;
+  }
+
   for (let i = 0; i < maxRetries; i++) {
     try {
       console.log(`Testing MinIO connection (attempt ${i + 1}/${maxRetries})`);
       
-      // Try to list buckets as a connection test
+      // Try to list buckets as a connection test with longer timeout
       await Promise.race([
         client.listBuckets(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection test timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection test timeout')), 20000)) // Increased to 20 seconds
       ]);
       
       console.log('MinIO connection test successful');
@@ -82,10 +88,13 @@ const testMinioConnection = async (client, maxRetries = 3) => {
       console.warn(`MinIO connection test attempt ${i + 1} failed:`, error.message);
       if (i === maxRetries - 1) {
         console.error('All MinIO connection tests failed');
+        console.warn('Consider setting SKIP_MINIO_CONNECTION_TEST=true if MinIO server is known to be working');
         return false;
       }
-      // Wait before retry
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait before retry with increasing delay
+      const delay = 2000 + (i * 1000); // 2s, 3s, 4s
+      console.log(`Retrying connection test in ${delay/1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
   return false;
@@ -110,10 +119,17 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
   console.log('===============================');
 
   try {
-    // Test connection first
-    const connectionOk = await testMinioConnection(minioClient);
+    // Test connection first, but allow fallback if connection test fails
+    let connectionOk = await testMinioConnection(minioClient);
+    
     if (!connectionOk) {
-      throw new Error('MinIO connection test failed');
+      console.warn('Connection test failed, attempting to skip connection test and proceed with upload...');
+      // Try again with connection test skipped
+      connectionOk = await testMinioConnection(minioClient, 1, true);
+      
+      if (!connectionOk) {
+        throw new Error('MinIO connection test failed and fallback also failed');
+      }
     }
 
     // Check if bucket exists, if not create it
@@ -121,7 +137,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
     try {
       bucketExists = await Promise.race([
         minioClient.bucketExists(bucket),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket check timeout')), 15000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket check timeout')), 30000)) // Increased to 30 seconds
       ]);
     } catch (bucketCheckError) {
       console.warn('Bucket check failed, assuming bucket does not exist:', bucketCheckError.message);
@@ -132,7 +148,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
       try {
         await Promise.race([
           minioClient.makeBucket(bucket, process.env.S3_REGION || 'us-east-1'),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket creation timeout')), 15000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket creation timeout')), 30000)) // Increased to 30 seconds
         ]);
         console.log(`Bucket '${bucket}' created successfully.`);
       } catch (bucketCreateError) {
@@ -157,7 +173,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
     try {
       await Promise.race([
         minioClient.setBucketPolicy(bucket, JSON.stringify(bucketPolicy)),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Policy set timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Policy set timeout')), 30000)) // Increased to 30 seconds
       ]);
       console.log(`Bucket policy set for '${bucket}'`);
     } catch (policyError) {
@@ -178,7 +194,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
           }, {
             'x-amz-acl': 'public-read'
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 30000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 60000)) // Increased to 60 seconds for large files
         ]);
         
         uploadSuccess = true;

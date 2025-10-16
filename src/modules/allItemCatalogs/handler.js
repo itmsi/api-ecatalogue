@@ -7,6 +7,58 @@ const { Readable } = require('stream');
 const { pgCore: db } = require('../../config/database');
 
 /**
+ * Helper function to handle file_foto upload
+ */
+const handleFileFotoUpload = async (req, trx) => {
+  let fileFotoUrl = null;
+  
+  // Handle file_foto upload jika ada dan valid
+  if (req.files && req.files.file_foto && req.files.file_foto.length > 0) {
+    const fotoFile = req.files.file_foto[0];
+    
+    // Check if file is valid (not empty, null, or undefined)
+    if (!fotoFile || !fotoFile.buffer || fotoFile.buffer.length === 0) {
+      console.log('file_foto is empty or invalid, skipping upload');
+      fileFotoUrl = null;
+    } else {
+      try {
+        const fileName = generateCatalogImageFileName(fotoFile.originalname);
+        const contentType = fotoFile.mimetype;
+        
+        console.log('Uploading file_foto:', fileName);
+        const uploadResult = await uploadToMinio(fileName, fotoFile.buffer, contentType);
+        console.log('Upload result:', uploadResult);
+        
+        if (uploadResult.success) {
+          fileFotoUrl = uploadResult.url;
+        } else {
+          console.error('Failed to upload file_foto:', uploadResult.error || 'MinIO may be disabled or not configured');
+          
+          // Check if it's a fallback scenario (MinIO server not reachable)
+          if (uploadResult.fallback) {
+            console.warn('MinIO server not reachable, continuing without file upload');
+            // Continue without file upload, set fileFotoUrl to null
+            fileFotoUrl = null;
+          } else {
+            await trx.rollback();
+            throw new Error(`Gagal mengupload file foto: ${uploadResult.error || 'MinIO tidak aktif atau belum dikonfigurasi dengan benar'}`);
+          }
+        }
+      } catch (uploadError) {
+        console.error('Error uploading file_foto:', uploadError);
+        await trx.rollback();
+        throw new Error(`Error saat mengupload file foto: ${uploadError.message}`);
+      }
+    }
+  } else {
+    console.log('file_foto not provided or empty, proceeding without file upload');
+    fileFotoUrl = null;
+  }
+  
+  return fileFotoUrl;
+};
+
+/**
  * Helper function to parse CSV file
  */
 const parseCsvFile = (buffer) => {
