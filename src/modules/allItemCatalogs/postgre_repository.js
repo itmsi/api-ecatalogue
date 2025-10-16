@@ -885,10 +885,97 @@ const remove = async (id, userId) => {
   return null;
 };
 
+/**
+ * Find master_pdf by master_pdf_id
+ */
+const findMasterPdfById = async (masterPdfId) => {
+  const data = await db(MASTER_PDF_TABLE)
+    .where({ master_pdf_id: masterPdfId, is_delete: false })
+    .whereNull('deleted_at')
+    .first();
+  
+  return data;
+};
+
+/**
+ * Find data master category by master_pdf_id dengan struktur yang diinginkan
+ */
+const findDataMasterCategoryByMasterPdfId = async (masterPdfId) => {
+  const allCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
+  const dataMasterCategory = [];
+  
+  for (const catalogType of allCatalogTypes) {
+    const tableName = getTableName(catalogType);
+    const relatedTables = getRelatedTables(catalogType);
+    
+    if (!tableName || !relatedTables) continue;
+    
+    // Get items untuk catalog type ini
+    const items = await db(tableName)
+      .select(
+        `${tableName}.*`,
+        `${relatedTables.master}.${relatedTables.masterNameEn} as master_category_name`,
+        `${relatedTables.master}.${getMasterTableIdField(catalogType)} as master_category_id`,
+        `${relatedTables.type}.${relatedTables.typeNameEn} as type_category_name`,
+        `${relatedTables.type}.${relatedTables.typeIdField} as type_category_id`
+      )
+      .leftJoin(relatedTables.master, `${tableName}.${relatedTables.masterIdField}`, `${relatedTables.master}.${getMasterTableIdField(catalogType)}`)
+      .leftJoin(relatedTables.type, `${tableName}.${relatedTables.typeIdField}`, `${relatedTables.type}.${relatedTables.typeIdField}`)
+      .where({ [`${tableName}.master_pdf_id`]: masterPdfId, [`${tableName}.is_delete`]: false })
+      .whereNull(`${tableName}.deleted_at`)
+      .orderBy(`${tableName}.created_at`, 'desc');
+    
+    if (items.length > 0) {
+      // Group items by master_category_id dan type_category_id
+      const groupedItems = {};
+      
+      items.forEach(item => {
+        const key = `${item.master_category_id || 'null'}_${item.type_category_id || 'null'}`;
+        
+        if (!groupedItems[key]) {
+          groupedItems[key] = {
+            master_catalog: catalogType,
+            master_category_id: item.master_category_id,
+            master_category_name: item.master_category_name,
+            type_category_id: item.type_category_id,
+            type_category_name: item.type_category_name,
+            data_items: []
+          };
+        }
+        
+        // Add item to data_items
+        const itemData = {
+          items_id: item[getIdFieldName(catalogType)],
+          master_pdf_id: item.master_pdf_id,
+          target_id: item.target_id,
+          diagram_serial_number: item.diagram_serial_number,
+          part_number: item.part_number,
+          catalog_item_name_en: item.catalog_item_name_en,
+          catalog_item_name_ch: item.catalog_item_name_ch,
+          description: item.description,
+          quantity: item.quantity,
+          file_foto: item.file_foto
+        };
+        
+        groupedItems[key].data_items.push(itemData);
+      });
+      
+      // Convert grouped items to array
+      Object.values(groupedItems).forEach(group => {
+        dataMasterCategory.push(group);
+      });
+    }
+  }
+  
+  return dataMasterCategory;
+};
+
 module.exports = {
   findAll,
   findById,
   findByMasterPdfId,
+  findMasterPdfById,
+  findDataMasterCategoryByMasterPdfId,
   findOrCreateMasterPdf,
   findOrCreateMasterPdfWithTransaction,
   createWithTransaction,

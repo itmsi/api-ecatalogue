@@ -145,8 +145,8 @@ const allItemCatalogsPaths = {
   '/all-item-catalogs/{id}': {
     get: {
       tags: ['All Item Catalogs'],
-      summary: 'Get item catalog by ID',
-      description: 'Retrieve a specific item catalog by its ID',
+      summary: 'Get item catalog by master_pdf_id',
+      description: 'Retrieve item catalogs grouped by master category based on master_pdf_id',
       security: [
         {
           bearerAuth: []
@@ -161,16 +161,16 @@ const allItemCatalogsPaths = {
             type: 'string',
             format: 'uuid'
           },
-          description: 'Item catalog ID'
+          description: 'Master PDF ID'
         }
       ],
-      responses: {
+        responses: {
         200: {
-          description: 'Successfully retrieved item catalog',
+          description: 'Successfully retrieved item catalog grouped by master category',
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/AllItemCatalogDetailResponse'
+                $ref: '#/components/schemas/AllItemCatalogMasterPdfResponse'
               }
             }
           }

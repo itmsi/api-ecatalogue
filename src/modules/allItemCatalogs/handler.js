@@ -117,26 +117,26 @@ const getAll = async (req, res) => {
 };
 
 /**
- * Get single item by ID
+ * Get single item by master_pdf_id
  */
 const getById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // id sekarang adalah master_pdf_id
     
-    // Get master_pdf_id dari item
-    const item = await repository.findById(id);
+    // Get data dari master_pdf berdasarkan master_pdf_id
+    const masterPdfData = await repository.findMasterPdfById(id);
     
-    if (!item) {
+    if (!masterPdfData) {
       return errorResponse(res, { message: 'Data tidak ditemukan' }, 404);
     }
     
-    // Get all items dengan master_pdf_id yang sama
-    const dataItems = await repository.findByMasterPdfId(item.master_pdf_id);
+    // Get all items dengan master_pdf_id yang sama dan group by master_category
+    const dataMasterCategory = await repository.findDataMasterCategoryByMasterPdfId(id);
     
     const result = {
-      name_pdf: item.name_pdf,
-      master_pdf_id: item.master_pdf_id,
-      data_items: dataItems
+      name_pdf: masterPdfData.name_pdf,
+      master_pdf_id: masterPdfData.master_pdf_id,
+      data_master_category: dataMasterCategory
     };
     
     return baseResponse(res, { data: result });

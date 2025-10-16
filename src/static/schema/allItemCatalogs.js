@@ -47,7 +47,7 @@ const allItemCatalogsSchemas = {
 
     '/api/v1/all-item-catalogs/{id}': {
       get: {
-        summary: 'Mendapatkan detail item katalog berdasarkan ID',
+        summary: 'Mendapatkan item katalog berdasarkan master_pdf_id yang dikelompokkan berdasarkan master category',
         tags: ['All Item Catalogs'],
         security: [
           {
@@ -63,16 +63,16 @@ const allItemCatalogsSchemas = {
               type: 'string',
               format: 'uuid'
             },
-            description: 'ID item katalog'
+            description: 'Master PDF ID'
           }
         ],
         responses: {
           200: {
-            description: 'Berhasil mendapatkan data',
+            description: 'Berhasil mendapatkan data item katalog yang dikelompokkan berdasarkan master category',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/AllItemCatalogDetailResponse'
+                  $ref: '#/components/schemas/AllItemCatalogMasterPdfResponse'
                 }
               }
             }
@@ -676,6 +676,110 @@ const allItemCatalogsSchemas = {
             type: 'array',
             items: {
               $ref: '#/components/schemas/AllItemCatalog'
+            }
+          }
+        }
+      }
+    }
+  },
+
+  AllItemCatalogMasterPdfResponse: {
+    type: 'object',
+    properties: {
+      success: {
+        type: 'boolean',
+        description: 'Success status'
+      },
+      data: {
+        type: 'object',
+        properties: {
+          name_pdf: {
+            type: 'string',
+            description: 'PDF name'
+          },
+          master_pdf_id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Master PDF ID'
+          },
+          data_master_category: {
+            type: 'array',
+            description: 'Array of master categories with their items',
+            items: {
+              type: 'object',
+              properties: {
+                master_catalog: {
+                  type: 'string',
+                  enum: ['engine', 'axle', 'cabin', 'steering', 'transmission'],
+                  description: 'Jenis katalog (engine, axle, cabin, steering, atau transmission)'
+                },
+                master_category_id: {
+                  type: 'string',
+                  description: 'ID dari master category (engine_id, axle_id, cabin_id, steering_id, atau transmission_id)'
+                },
+                master_category_name: {
+                  type: 'string',
+                  description: 'Nama dari master category (engines_name_en, axle_name_en, cabin_name_en, steering_name_en, atau transmission_name_en)'
+                },
+                type_category_id: {
+                  type: 'string',
+                  description: 'ID dari type category (type_engine_id, type_axle_id, type_cabin_id, type_steering_id, atau type_transmission_id)'
+                },
+                type_category_name: {
+                  type: 'string',
+                  description: 'Nama dari type category (type_engines_name_en, type_axles_name_en, type_cabines_name_en, type_steerings_name_en, atau type_transmissions_name_en)'
+                },
+                data_items: {
+                  type: 'array',
+                  description: 'Array of items dalam kategori ini',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      items_id: {
+                        type: 'string',
+                        description: 'ID dari item (item_catalog_engine_id, item_catalog_axle_id, item_catalog_cabine_id, item_catalog_steering_id, atau item_catalog_transmission_id)'
+                      },
+                      master_pdf_id: {
+                        type: 'string',
+                        format: 'uuid',
+                        description: 'Master PDF ID'
+                      },
+                      target_id: {
+                        type: 'string',
+                        description: 'Target ID'
+                      },
+                      diagram_serial_number: {
+                        type: 'string',
+                        description: 'Diagram serial number'
+                      },
+                      part_number: {
+                        type: 'string',
+                        description: 'Part number'
+                      },
+                      catalog_item_name_en: {
+                        type: 'string',
+                        description: 'Catalog item name in English'
+                      },
+                      catalog_item_name_ch: {
+                        type: 'string',
+                        description: 'Catalog item name in Chinese'
+                      },
+                      description: {
+                        type: 'string',
+                        description: 'Item description'
+                      },
+                      quantity: {
+                        type: 'integer',
+                        description: 'Item quantity'
+                      },
+                      file_foto: {
+                        type: 'string',
+                        description: 'File foto URL'
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }

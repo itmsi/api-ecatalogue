@@ -178,14 +178,14 @@ const updateValidation = [
 ];
 
 /**
- * Validation rules for getting item by ID
+ * Validation rules for getting item by master_pdf_id
  */
 const getByIdValidation = [
   param('id')
     .notEmpty()
-    .withMessage('ID wajib diisi')
+    .withMessage('Master PDF ID wajib diisi')
     .isUUID()
-    .withMessage('Format ID tidak valid')
+    .withMessage('Format Master PDF ID tidak valid')
 ];
 
 /**
