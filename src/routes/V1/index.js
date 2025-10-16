@@ -118,6 +118,10 @@ routing.use(`${API_TAG}/item_catalog_steering`, itemCatalogSteeringModule)
 const itemCatalogCabineModule = require('../../modules/itemCatalogCabine')
 routing.use(`${API_TAG}/item_catalog_cabine`, itemCatalogCabineModule)
 
+// All Item Catalogs Module (Unified API for all catalog types)
+const allItemCatalogsModule = require('../../modules/allItemCatalogs')
+routing.use(`${API_TAG}/all-item-catalogs`, allItemCatalogsModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')

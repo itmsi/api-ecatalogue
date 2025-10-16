@@ -600,6 +600,57 @@ const handleItemCatalogCabineUpload = (req, res, next) => {
   });
 };
 
+// Middleware for All Item Catalogs upload (supports both CSV and image files)
+const handleAllItemCatalogsUpload = (req, res, next) => {
+  const uploadFields = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+      if (file.fieldname === 'file_foto') {
+        imageFileFilter(req, file, cb);
+      } else if (file.fieldname === 'file_csv') {
+        csvFileFilter(req, file, cb);
+      } else {
+        cb(null, true);
+      }
+    },
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit per file
+      files: 2 // Allow up to 2 files (CSV and image)
+    }
+  }).fields([
+    { name: 'file_csv', maxCount: 1 },
+    { name: 'file_foto', maxCount: 1 }
+  ]);
+
+  uploadFields(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File terlalu besar. Maksimal 50MB per file.'
+        });
+      } else if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Terlalu banyak file. Maksimal 2 file (CSV dan foto).'
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Error upload file: ' + err.message
+        });
+      }
+    } else if (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Error upload file: ' + err.message
+      });
+    }
+    
+    next();
+  });
+};
+
 module.exports = {
   handleFileUpload,
   handleImageUpload,
@@ -609,6 +660,7 @@ module.exports = {
   handleItemCatalogAxleUpload,
   handleItemCatalogSteeringUpload,
   handleItemCatalogCabineUpload,
+  handleAllItemCatalogsUpload,
   generateFileName,
   generateCatalogImageFileName,
   getContentType

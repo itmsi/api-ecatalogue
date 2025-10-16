@@ -79,6 +79,8 @@ const itemCatalogSteeringSchema = require('./schema/itemCatalogSteering');
 const itemCatalogSteeringPaths = require('./path/itemCatalogSteering');
 const itemCatalogCabineSchema = require('./schema/itemCatalogCabine');
 const itemCatalogCabinePaths = require('./path/itemCatalogCabine');
+const allItemCatalogsSchema = require('./schema/allItemCatalogs');
+const allItemCatalogsPaths = require('./path/allItemCatalogs');
 // Combine all schemas
 const schemas = {
   // ...exampleSchema,
@@ -107,6 +109,7 @@ const schemas = {
   ...itemCatalogAxleSchema,
   ...itemCatalogSteeringSchema,
   ...itemCatalogCabineSchema,
+  ...allItemCatalogsSchema,
   // ...yourModuleSchema,
 };
 
@@ -138,6 +141,7 @@ const paths = {
   ...itemCatalogAxlePaths,
   ...itemCatalogSteeringPaths,
   ...itemCatalogCabinePaths,
+  ...allItemCatalogsPaths,
   // ...yourModulePaths,
 };
 
