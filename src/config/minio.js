@@ -6,17 +6,20 @@ const https = require('https');
 
 // Create custom agents with timeout
 const httpAgent = new http.Agent({
-  timeout: 10000, // 10 seconds timeout
+  timeout: 15000, // 15 seconds timeout
   keepAlive: true,
   keepAliveMsecs: 1000,
-  maxSockets: 50
+  maxSockets: 50,
+  maxFreeSockets: 10
 });
 
 const httpsAgent = new https.Agent({
-  timeout: 10000, // 10 seconds timeout
+  timeout: 15000, // 15 seconds timeout
   keepAlive: true,
   keepAliveMsecs: 1000,
-  maxSockets: 50
+  maxSockets: 50,
+  maxFreeSockets: 10,
+  rejectUnauthorized: false // Allow self-signed certificates
 });
 
 // Check if MinIO is enabled
@@ -61,6 +64,33 @@ if (isMinioEnabled) {
   });
 }
 
+// Connection test function
+const testMinioConnection = async (client, maxRetries = 3) => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      console.log(`Testing MinIO connection (attempt ${i + 1}/${maxRetries})`);
+      
+      // Try to list buckets as a connection test
+      await Promise.race([
+        client.listBuckets(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection test timeout')), 10000))
+      ]);
+      
+      console.log('MinIO connection test successful');
+      return true;
+    } catch (error) {
+      console.warn(`MinIO connection test attempt ${i + 1} failed:`, error.message);
+      if (i === maxRetries - 1) {
+        console.error('All MinIO connection tests failed');
+        return false;
+      }
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
+  return false;
+};
+
 // Upload file to MinIO
 const uploadToMinio = async (objectName, buffer, contentType = 'application/octet-stream', bucketName = null) => {
   if (!isMinioEnabled) {
@@ -69,20 +99,46 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
   }
 
   const bucket = bucketName || process.env.S3_BUCKET;
+  
+  // Debug logging
+  console.log('=== MinIO Upload Debug Info ===');
+  console.log('Endpoint:', process.env.S3_ENDPOINT);
+  console.log('Bucket:', bucket);
+  console.log('Object Name:', objectName);
+  console.log('Content Type:', contentType);
+  console.log('Buffer Size:', buffer.length);
+  console.log('===============================');
 
   try {
+    // Test connection first
+    const connectionOk = await testMinioConnection(minioClient);
+    if (!connectionOk) {
+      throw new Error('MinIO connection test failed');
+    }
+
     // Check if bucket exists, if not create it
-    const bucketExists = await Promise.race([
-      minioClient.bucketExists(bucket),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket check timeout')), 10000))
-    ]);
+    let bucketExists = false;
+    try {
+      bucketExists = await Promise.race([
+        minioClient.bucketExists(bucket),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket check timeout')), 15000))
+      ]);
+    } catch (bucketCheckError) {
+      console.warn('Bucket check failed, assuming bucket does not exist:', bucketCheckError.message);
+      bucketExists = false;
+    }
     
     if (!bucketExists) {
-      await Promise.race([
-        minioClient.makeBucket(bucket, process.env.S3_REGION || 'us-east-1'),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket creation timeout')), 10000))
-      ]);
-      console.log(`Bucket '${bucket}' created successfully.`);
+      try {
+        await Promise.race([
+          minioClient.makeBucket(bucket, process.env.S3_REGION || 'us-east-1'),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket creation timeout')), 15000))
+        ]);
+        console.log(`Bucket '${bucket}' created successfully.`);
+      } catch (bucketCreateError) {
+        console.warn('Bucket creation failed, continuing with upload:', bucketCreateError.message);
+        // Continue with upload even if bucket creation fails
+      }
     }
 
     // Set bucket policy untuk public read (selalu set, tidak peduli bucket baru atau lama)
@@ -108,15 +164,40 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
       console.warn(`Could not set bucket policy for '${bucket}':`, policyError.message);
     }
 
-    // Upload the file with public-read ACL
-    await Promise.race([
-      minioClient.putObject(bucket, objectName, buffer, {
-        'Content-Type': contentType
-      }, {
-        'x-amz-acl': 'public-read'
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 30000))
-    ]);
+    // Upload the file with public-read ACL (with retry logic)
+    let uploadSuccess = false;
+    let lastUploadError = null;
+    
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`Uploading file (attempt ${attempt}/3): ${objectName}`);
+        
+        await Promise.race([
+          minioClient.putObject(bucket, objectName, buffer, {
+            'Content-Type': contentType
+          }, {
+            'x-amz-acl': 'public-read'
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 30000))
+        ]);
+        
+        uploadSuccess = true;
+        console.log(`File uploaded successfully on attempt ${attempt}`);
+        break;
+      } catch (uploadError) {
+        lastUploadError = uploadError;
+        console.warn(`Upload attempt ${attempt} failed:`, uploadError.message);
+        
+        if (attempt < 3) {
+          console.log(`Retrying upload in 2 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    }
+    
+    if (!uploadSuccess) {
+      throw lastUploadError || new Error('Upload failed after all retry attempts');
+    }
 
     // Generate public URL
     const endpointUrl = new URL(process.env.S3_ENDPOINT);
@@ -290,5 +371,6 @@ module.exports = {
   deleteFromMinio,
   getSignedUrl,
   setBucketPublicPolicy,
-  getBucketPolicy
+  getBucketPolicy,
+  testMinioConnection
 };
