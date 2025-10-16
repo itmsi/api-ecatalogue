@@ -4,9 +4,9 @@ const Minio = require('minio');
 const http = require('http');
 const https = require('https');
 
-// Create custom agents with timeout (increased for server environment)
+// Create custom agents with timeout (aggressively increased for server environment)
 const httpAgent = new http.Agent({
-  timeout: 30000, // 30 seconds timeout for server environment
+  timeout: 120000, // 2 minutes timeout for server environment
   keepAlive: true,
   keepAliveMsecs: 1000,
   maxSockets: 50,
@@ -14,7 +14,7 @@ const httpAgent = new http.Agent({
 });
 
 const httpsAgent = new https.Agent({
-  timeout: 30000, // 30 seconds timeout for server environment
+  timeout: 120000, // 2 minutes timeout for server environment
   keepAlive: true,
   keepAliveMsecs: 1000,
   maxSockets: 50,
@@ -24,6 +24,33 @@ const httpsAgent = new https.Agent({
 
 // Check if MinIO is enabled
 const isMinioEnabled = process.env.S3_PROVIDER === 'minio';
+
+// Function to replace base URL if S3_BASE_URL is configured
+const replaceBaseUrl = (originalUrl) => {
+  // If S3_BASE_URL is not configured, return original URL
+  if (!process.env.S3_BASE_URL) {
+    return originalUrl;
+  }
+
+  try {
+    const url = new URL(originalUrl);
+    const baseUrl = new URL(process.env.S3_BASE_URL);
+    
+    // Replace the protocol, hostname, and port with the base URL
+    const newUrl = `${baseUrl.protocol}//${baseUrl.hostname}${baseUrl.port ? `:${baseUrl.port}` : ''}${url.pathname}`;
+    
+    console.log('URL replacement:', {
+      original: originalUrl,
+      new: newUrl,
+      baseUrl: process.env.S3_BASE_URL
+    });
+    
+    return newUrl;
+  } catch (error) {
+    console.warn('Error replacing base URL, returning original:', error.message);
+    return originalUrl;
+  }
+};
 
 // Initialize MinIO client only if enabled
 let minioClient = null;
@@ -67,8 +94,9 @@ if (isMinioEnabled) {
 // Connection test function
 const testMinioConnection = async (client, maxRetries = 3, skipTest = false) => {
   // Skip connection test if explicitly requested or if SKIP_MINIO_CONNECTION_TEST is set
-  if (skipTest || process.env.SKIP_MINIO_CONNECTION_TEST === 'true') {
-    console.log('Skipping MinIO connection test');
+  // Also skip if NODE_ENV is production (server environment)
+  if (skipTest || process.env.SKIP_MINIO_CONNECTION_TEST === 'true' || process.env.NODE_ENV === 'production') {
+    console.log('Skipping MinIO connection test (production environment or explicitly disabled)');
     return true;
   }
 
@@ -79,7 +107,7 @@ const testMinioConnection = async (client, maxRetries = 3, skipTest = false) => 
       // Try to list buckets as a connection test with longer timeout
       await Promise.race([
         client.listBuckets(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection test timeout')), 20000)) // Increased to 20 seconds
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection test timeout')), 60000)) // Increased to 60 seconds for server
       ]);
       
       console.log('MinIO connection test successful');
@@ -116,6 +144,8 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
   console.log('Object Name:', objectName);
   console.log('Content Type:', contentType);
   console.log('Buffer Size:', buffer.length);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('SKIP_MINIO_CONNECTION_TEST:', process.env.SKIP_MINIO_CONNECTION_TEST);
   console.log('===============================');
 
   try {
@@ -137,7 +167,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
     try {
       bucketExists = await Promise.race([
         minioClient.bucketExists(bucket),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket check timeout')), 30000)) // Increased to 30 seconds
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket check timeout')), 90000)) // Increased to 90 seconds for server
       ]);
     } catch (bucketCheckError) {
       console.warn('Bucket check failed, assuming bucket does not exist:', bucketCheckError.message);
@@ -148,7 +178,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
       try {
         await Promise.race([
           minioClient.makeBucket(bucket, process.env.S3_REGION || 'us-east-1'),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket creation timeout')), 30000)) // Increased to 30 seconds
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket creation timeout')), 90000)) // Increased to 90 seconds for server
         ]);
         console.log(`Bucket '${bucket}' created successfully.`);
       } catch (bucketCreateError) {
@@ -173,7 +203,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
     try {
       await Promise.race([
         minioClient.setBucketPolicy(bucket, JSON.stringify(bucketPolicy)),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Policy set timeout')), 30000)) // Increased to 30 seconds
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Policy set timeout')), 90000)) // Increased to 90 seconds for server
       ]);
       console.log(`Bucket policy set for '${bucket}'`);
     } catch (policyError) {
@@ -194,7 +224,7 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
           }, {
             'x-amz-acl': 'public-read'
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 60000)) // Increased to 60 seconds for large files
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 120000)) // Increased to 2 minutes for server environment
         ]);
         
         uploadSuccess = true;
@@ -222,9 +252,12 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
     const port = endpointUrl.port ? `:${endpointUrl.port}` : '';
     const publicUrl = `${protocol}//${hostname}${port}/${bucket}/${objectName}`;
 
+    // Replace base URL if S3_BASE_URL is configured
+    const finalUrl = replaceBaseUrl(publicUrl);
+
     return {
       success: true,
-      url: publicUrl,
+      url: finalUrl,
       bucket: bucket,
       object: objectName
     };
@@ -278,9 +311,12 @@ const uploadToMinioPrivate = async (bucketName, objectName, buffer, contentType 
       fiveMonthsInSeconds
     );
 
+    // Replace base URL if S3_BASE_URL is configured
+    const finalUrl = replaceBaseUrl(url);
+
     return {
       success: true,
-      url,
+      url: finalUrl,
       bucket: bucketName,
       object: objectName
     };
@@ -325,7 +361,10 @@ const getSignedUrl = async (bucketName, objectName, expiry = defaultExpiry, isPr
   try {
     const client = isPrivate ? minioClientPrivate : minioClient;
     const url = await client.presignedGetObject(bucketName, objectName, expiry);
-    return url;
+    
+    // Replace base URL if S3_BASE_URL is configured
+    const finalUrl = replaceBaseUrl(url);
+    return finalUrl;
   } catch (error) {
     console.error('Error generating signed URL:', error);
     return '';
@@ -388,5 +427,6 @@ module.exports = {
   getSignedUrl,
   setBucketPublicPolicy,
   getBucketPolicy,
-  testMinioConnection
+  testMinioConnection,
+  replaceBaseUrl
 };
