@@ -38,9 +38,18 @@ const getListValidation = [
       return true;
     }),
   body('master_catalog')
-    .optional()
-    .isIn(['engine', 'axle', 'cabin', 'steering', 'transmission'])
-    .withMessage('master_catalog harus berupa: engine, axle, cabin, steering, atau transmission')
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true; // Allow empty string, null, or undefined
+      }
+      // Validate enum values only if value is not empty
+      const allowedValues = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
+      if (!allowedValues.includes(value)) {
+        throw new Error('master_catalog harus berupa: engine, axle, cabin, steering, atau transmission');
+      }
+      return true;
+    })
 ];
 
 /**

@@ -101,7 +101,7 @@ const MASTER_PDF_TABLE = 'master_pdf';
 const findOrCreateMasterPdf = async (namePdf, masterCatalog = null, createdBy = null) => {
   // Cek apakah master_pdf sudah ada dengan kombinasi name_pdf dan master_catalog
   const whereClause = { name_pdf: namePdf, is_delete: false };
-  if (masterCatalog) {
+  if (masterCatalog && masterCatalog.trim() !== '') {
     whereClause.master_catalog = masterCatalog;
   }
   
@@ -124,7 +124,7 @@ const findOrCreateMasterPdf = async (namePdf, masterCatalog = null, createdBy = 
     is_delete: false
   };
   
-  if (masterCatalog) {
+  if (masterCatalog && masterCatalog.trim() !== '') {
     insertData.master_catalog = masterCatalog;
   }
   
@@ -141,7 +141,7 @@ const findOrCreateMasterPdf = async (namePdf, masterCatalog = null, createdBy = 
 const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, masterCatalog = null, createdBy = null) => {
   // Cek apakah master_pdf sudah ada dengan kombinasi name_pdf dan master_catalog
   const whereClause = { name_pdf: namePdf, is_delete: false };
-  if (masterCatalog) {
+  if (masterCatalog && masterCatalog.trim() !== '') {
     whereClause.master_catalog = masterCatalog;
   }
   
@@ -164,7 +164,7 @@ const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, masterCatalog 
     is_delete: false
   };
   
-  if (masterCatalog) {
+  if (masterCatalog && masterCatalog.trim() !== '') {
     insertData.master_catalog = masterCatalog;
   }
   
@@ -191,9 +191,9 @@ const findAll = async (filters) => {
   
   const offset = (page - 1) * limit;
   
-  // If master_catalog is specified, query specific table
-  if (master_catalog) {
-    return await findAllByCatalogType(filters, master_catalog, offset);
+  // If master_catalog is specified and not empty, filter by master_catalog column in master_pdf table
+  if (master_catalog && master_catalog.trim() !== '') {
+    return await findAllByMasterCatalog(filters, master_catalog, offset);
   }
   
   // If no master_catalog specified, query all tables and combine results
@@ -203,6 +203,57 @@ const findAll = async (filters) => {
   
   for (const catalogType of allCatalogTypes) {
     const result = await findAllByCatalogType(filters, catalogType, 0); // offset 0 for individual queries
+    if (result.items.length > 0) {
+      allResults.push(...result.items);
+      totalCount += result.pagination.total;
+    }
+  }
+  
+  // Sort combined results
+  allResults.sort((a, b) => {
+    const aValue = a[sort_by];
+    const bValue = b[sort_by];
+    if (sort_order === 'desc') {
+      return bValue > aValue ? 1 : -1;
+    } else {
+      return aValue > bValue ? 1 : -1;
+    }
+  });
+  
+  // Apply pagination to combined results
+  const paginatedResults = allResults.slice(offset, offset + limit);
+  
+  return {
+    items: paginatedResults,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit)
+    }
+  };
+};
+
+/**
+ * Find all items by master_catalog filter (filter by master_pdf.master_catalog column)
+ */
+const findAllByMasterCatalog = async (filters, masterCatalog, offset) => {
+  const {
+    page = 1,
+    limit = 10,
+    search = '',
+    sort_by = 'created_at',
+    sort_order = 'desc',
+    master_pdf_id = null
+  } = filters;
+  
+  // Query all tables that match the master_catalog filter
+  const allCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
+  const allResults = [];
+  let totalCount = 0;
+  
+  for (const catalogType of allCatalogTypes) {
+    const result = await findAllByCatalogTypeWithMasterCatalogFilter(filters, catalogType, masterCatalog, 0);
     if (result.items.length > 0) {
       allResults.push(...result.items);
       totalCount += result.pagination.total;
@@ -275,15 +326,23 @@ const findAllByCatalogType = async (filters, masterCatalog, offset) => {
     query = query.where({ [`${tableName}.master_pdf_id`]: master_pdf_id });
   }
   
-  // Search
+  // Search in multiple tables and columns
   if (search) {
     query = query.where((builder) => {
       builder
+        // Search in master_pdf table
         .where('master_pdf.name_pdf', 'ilike', `%${search}%`)
+        // Search in item catalog table
         .orWhere(`${tableName}.catalog_item_name_en`, 'ilike', `%${search}%`)
         .orWhere(`${tableName}.catalog_item_name_ch`, 'ilike', `%${search}%`)
         .orWhere(`${tableName}.part_number`, 'ilike', `%${search}%`)
-        .orWhere(`${tableName}.target_id`, 'ilike', `%${search}%`);
+        .orWhere(`${tableName}.target_id`, 'ilike', `%${search}%`)
+        // Search in master table (engines, axels, cabines, steerings, transmissions)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameCn}`, 'ilike', `%${search}%`)
+        // Search in type table (type_engines, type_axels, type_cabines, type_steerings, type_transmissions)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameCn}`, 'ilike', `%${search}%`);
     });
   }
   
@@ -295,6 +354,9 @@ const findAllByCatalogType = async (filters, masterCatalog, offset) => {
   
   // Count total dengan query terpisah
   const countQuery = db(tableName)
+    .leftJoin('master_pdf', `${tableName}.master_pdf_id`, 'master_pdf.master_pdf_id')
+    .leftJoin(relatedTables.master, `${tableName}.${relatedTables.masterIdField}`, `${relatedTables.master}.${getMasterTableIdField(masterCatalog)}`)
+    .leftJoin(relatedTables.type, `${tableName}.${relatedTables.typeIdField}`, `${relatedTables.type}.${relatedTables.typeIdField}`)
     .where({ [`${tableName}.is_delete`]: false })
     .whereNull(`${tableName}.deleted_at`);
   
@@ -303,15 +365,137 @@ const findAllByCatalogType = async (filters, masterCatalog, offset) => {
   }
   
   if (search) {
-    countQuery.leftJoin('master_pdf', `${tableName}.master_pdf_id`, 'master_pdf.master_pdf_id')
-      .where((builder) => {
-        builder
-          .where('master_pdf.name_pdf', 'ilike', `%${search}%`)
-          .orWhere(`${tableName}.catalog_item_name_en`, 'ilike', `%${search}%`)
-          .orWhere(`${tableName}.catalog_item_name_ch`, 'ilike', `%${search}%`)
-          .orWhere(`${tableName}.part_number`, 'ilike', `%${search}%`)
-          .orWhere(`${tableName}.target_id`, 'ilike', `%${search}%`);
-      });
+    countQuery.where((builder) => {
+      builder
+        // Search in master_pdf table
+        .where('master_pdf.name_pdf', 'ilike', `%${search}%`)
+        // Search in item catalog table
+        .orWhere(`${tableName}.catalog_item_name_en`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.catalog_item_name_ch`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.part_number`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.target_id`, 'ilike', `%${search}%`)
+        // Search in master table (engines, axels, cabines, steerings, transmissions)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameCn}`, 'ilike', `%${search}%`)
+        // Search in type table (type_engines, type_axels, type_cabines, type_steerings, type_transmissions)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameCn}`, 'ilike', `%${search}%`);
+    });
+  }
+  
+  const total = await countQuery.count('* as count').first();
+  
+  return {
+    items: data,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: parseInt(total.count),
+      totalPages: Math.ceil(total.count / limit)
+    }
+  };
+};
+
+/**
+ * Find all items by specific catalog type with master_catalog filter
+ */
+const findAllByCatalogTypeWithMasterCatalogFilter = async (filters, masterCatalog, masterCatalogFilter, offset) => {
+  const {
+    page = 1,
+    limit = 10,
+    search = '',
+    sort_by = 'created_at',
+    sort_order = 'desc',
+    master_pdf_id = null
+  } = filters;
+  
+  const tableName = getTableName(masterCatalog);
+  const relatedTables = getRelatedTables(masterCatalog);
+  
+  if (!tableName || !relatedTables) {
+    throw new Error(`Invalid master_catalog: ${masterCatalog}`);
+  }
+  
+  let query = db(tableName)
+    .select(
+      `${tableName}.*`,
+      'master_pdf.name_pdf',
+      'master_pdf.master_catalog',
+      `${relatedTables.master}.${relatedTables.masterNameEn}`,
+      `${relatedTables.master}.${relatedTables.masterNameCn}`,
+      `${relatedTables.type}.${relatedTables.typeNameEn}`,
+      `${relatedTables.type}.${relatedTables.typeNameCn}`
+    )
+    .leftJoin('master_pdf', `${tableName}.master_pdf_id`, 'master_pdf.master_pdf_id')
+    .leftJoin(relatedTables.master, `${tableName}.${relatedTables.masterIdField}`, `${relatedTables.master}.${getMasterTableIdField(masterCatalog)}`)
+    .leftJoin(relatedTables.type, `${tableName}.${relatedTables.typeIdField}`, `${relatedTables.type}.${relatedTables.typeIdField}`)
+    .where({ [`${tableName}.is_delete`]: false })
+    .whereNull(`${tableName}.deleted_at`)
+    // Filter by master_catalog column in master_pdf table
+    .where({ 'master_pdf.master_catalog': masterCatalogFilter });
+  
+  // Filter by master_pdf_id jika diberikan (skip jika string kosong)
+  if (master_pdf_id && master_pdf_id !== '') {
+    query = query.where({ [`${tableName}.master_pdf_id`]: master_pdf_id });
+  }
+  
+  // Search in multiple tables and columns
+  if (search) {
+    query = query.where((builder) => {
+      builder
+        // Search in master_pdf table
+        .where('master_pdf.name_pdf', 'ilike', `%${search}%`)
+        // Search in item catalog table
+        .orWhere(`${tableName}.catalog_item_name_en`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.catalog_item_name_ch`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.part_number`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.target_id`, 'ilike', `%${search}%`)
+        // Search in master table (engines, axels, cabines, steerings, transmissions)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameCn}`, 'ilike', `%${search}%`)
+        // Search in type table (type_engines, type_axels, type_cabines, type_steerings, type_transmissions)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameCn}`, 'ilike', `%${search}%`);
+    });
+  }
+  
+  const data = await query
+    .clone()
+    .orderBy(`${tableName}.${sort_by}`, sort_order)
+    .limit(limit)
+    .offset(offset);
+  
+  // Count total dengan query terpisah
+  const countQuery = db(tableName)
+    .leftJoin('master_pdf', `${tableName}.master_pdf_id`, 'master_pdf.master_pdf_id')
+    .leftJoin(relatedTables.master, `${tableName}.${relatedTables.masterIdField}`, `${relatedTables.master}.${getMasterTableIdField(masterCatalog)}`)
+    .leftJoin(relatedTables.type, `${tableName}.${relatedTables.typeIdField}`, `${relatedTables.type}.${relatedTables.typeIdField}`)
+    .where({ [`${tableName}.is_delete`]: false })
+    .whereNull(`${tableName}.deleted_at`)
+    // Filter by master_catalog column in master_pdf table
+    .where({ 'master_pdf.master_catalog': masterCatalogFilter });
+  
+  if (master_pdf_id && master_pdf_id !== '') {
+    countQuery.where({ [`${tableName}.master_pdf_id`]: master_pdf_id });
+  }
+  
+  if (search) {
+    countQuery.where((builder) => {
+      builder
+        // Search in master_pdf table
+        .where('master_pdf.name_pdf', 'ilike', `%${search}%`)
+        // Search in item catalog table
+        .orWhere(`${tableName}.catalog_item_name_en`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.catalog_item_name_ch`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.part_number`, 'ilike', `%${search}%`)
+        .orWhere(`${tableName}.target_id`, 'ilike', `%${search}%`)
+        // Search in master table (engines, axels, cabines, steerings, transmissions)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.master}.${relatedTables.masterNameCn}`, 'ilike', `%${search}%`)
+        // Search in type table (type_engines, type_axels, type_cabines, type_steerings, type_transmissions)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameEn}`, 'ilike', `%${search}%`)
+        .orWhere(`${relatedTables.type}.${relatedTables.typeNameCn}`, 'ilike', `%${search}%`);
+    });
   }
   
   const total = await countQuery.count('* as count').first();
@@ -331,8 +515,8 @@ const findAllByCatalogType = async (filters, masterCatalog, offset) => {
  * Find single item by ID with relations
  */
 const findById = async (id, masterCatalog = null) => {
-  // If master_catalog is specified, query specific table
-  if (masterCatalog) {
+  // If master_catalog is specified and not empty, query specific table
+  if (masterCatalog && masterCatalog.trim() !== '') {
     return await findByIdByCatalogType(id, masterCatalog);
   }
   
@@ -385,8 +569,8 @@ const findByIdByCatalogType = async (id, masterCatalog) => {
  * Find all items by master_pdf_id
  */
 const findByMasterPdfId = async (masterPdfId, masterCatalog = null) => {
-  // If master_catalog is specified, query specific table
-  if (masterCatalog) {
+  // If master_catalog is specified and not empty, query specific table
+  if (masterCatalog && masterCatalog.trim() !== '') {
     return await findByMasterPdfIdByCatalogType(masterPdfId, masterCatalog);
   }
   
