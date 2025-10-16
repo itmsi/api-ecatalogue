@@ -47,7 +47,12 @@ const getRelatedTables = (masterCatalog) => {
       typeNameEn: 'type_engine_name_en',
       typeNameCn: 'type_engine_name_cn',
       masterIdField: 'engine_id',
-      typeIdField: 'type_engine_id'
+      typeIdField: 'type_engine_id',
+      // Response field mapping untuk konsistensi
+      responseMasterNameEn: 'category_name_en',
+      responseMasterNameCn: 'category_name_cn',
+      responseTypeNameEn: 'type_category_name_en',
+      responseTypeNameCn: 'type_category_name_cn'
     },
     'axle': {
       master: 'axels',
@@ -57,7 +62,12 @@ const getRelatedTables = (masterCatalog) => {
       typeNameEn: 'type_axel_name_en',
       typeNameCn: 'type_axel_name_cn',
       masterIdField: 'axel_id',
-      typeIdField: 'type_axel_id'
+      typeIdField: 'type_axel_id',
+      // Response field mapping untuk konsistensi
+      responseMasterNameEn: 'category_name_en',
+      responseMasterNameCn: 'category_name_cn',
+      responseTypeNameEn: 'type_category_name_en',
+      responseTypeNameCn: 'type_category_name_cn'
     },
     'cabin': {
       master: 'cabines',
@@ -67,7 +77,12 @@ const getRelatedTables = (masterCatalog) => {
       typeNameEn: 'type_cabine_name_en',
       typeNameCn: 'type_cabine_name_cn',
       masterIdField: 'cabine_id',
-      typeIdField: 'type_cabine_id'
+      typeIdField: 'type_cabine_id',
+      // Response field mapping untuk konsistensi
+      responseMasterNameEn: 'category_name_en',
+      responseMasterNameCn: 'category_name_cn',
+      responseTypeNameEn: 'type_category_name_en',
+      responseTypeNameCn: 'type_category_name_cn'
     },
     'steering': {
       master: 'steerings',
@@ -77,7 +92,12 @@ const getRelatedTables = (masterCatalog) => {
       typeNameEn: 'type_steering_name_en',
       typeNameCn: 'type_steering_name_cn',
       masterIdField: 'steering_id',
-      typeIdField: 'type_steering_id'
+      typeIdField: 'type_steering_id',
+      // Response field mapping untuk konsistensi
+      responseMasterNameEn: 'category_name_en',
+      responseMasterNameCn: 'category_name_cn',
+      responseTypeNameEn: 'type_category_name_en',
+      responseTypeNameCn: 'type_category_name_cn'
     },
     'transmission': {
       master: 'transmissions',
@@ -87,13 +107,58 @@ const getRelatedTables = (masterCatalog) => {
       typeNameEn: 'type_transmission_name_en',
       typeNameCn: 'type_transmission_name_cn',
       masterIdField: 'transmission_id',
-      typeIdField: 'type_transmission_id'
+      typeIdField: 'type_transmission_id',
+      // Response field mapping untuk konsistensi
+      responseMasterNameEn: 'category_name_en',
+      responseMasterNameCn: 'category_name_cn',
+      responseTypeNameEn: 'type_category_name_en',
+      responseTypeNameCn: 'type_category_name_cn'
     }
   };
   return relatedMap[masterCatalog.toLowerCase()];
 };
 
 const MASTER_PDF_TABLE = 'master_pdf';
+
+/**
+ * Helper function to format response data with consistent field names
+ */
+const formatResponseData = (data, masterCatalog) => {
+  if (!data || !Array.isArray(data)) {
+    return data;
+  }
+  
+  const relatedTables = getRelatedTables(masterCatalog);
+  if (!relatedTables) {
+    return data;
+  }
+  
+  return data.map(item => {
+    const formattedItem = { ...item };
+    
+    // Rename master category fields
+    if (item[relatedTables.masterNameEn]) {
+      formattedItem[relatedTables.responseMasterNameEn] = item[relatedTables.masterNameEn];
+      delete formattedItem[relatedTables.masterNameEn];
+    }
+    if (item[relatedTables.masterNameCn]) {
+      formattedItem[relatedTables.responseMasterNameCn] = item[relatedTables.masterNameCn];
+      delete formattedItem[relatedTables.masterNameCn];
+    }
+    
+    // Rename type category fields
+    if (item[relatedTables.typeNameEn]) {
+      formattedItem[relatedTables.responseTypeNameEn] = item[relatedTables.typeNameEn];
+      delete formattedItem[relatedTables.typeNameEn];
+    }
+    if (item[relatedTables.typeNameCn]) {
+      formattedItem[relatedTables.responseTypeNameCn] = item[relatedTables.typeNameCn];
+      delete formattedItem[relatedTables.typeNameCn];
+    }
+    
+    return formattedItem;
+  });
+};
 
 /**
  * Find or create master PDF
@@ -177,6 +242,7 @@ const findOrCreateMasterPdfWithTransaction = async (trx, namePdf, masterCatalog 
 
 /**
  * Find all items with pagination and filter
+ * Total count dihitung berdasarkan tabel master_pdf, tapi pagination tetap individual items
  */
 const findAll = async (filters) => {
   const {
@@ -196,7 +262,7 @@ const findAll = async (filters) => {
     return await findAllByMasterCatalog(filters, master_catalog, offset);
   }
   
-  // If no master_catalog specified, query all tables and combine results
+  // Query all tables and combine results (seperti logika asli)
   const allCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
   const allResults = [];
   let totalCount = 0;
@@ -223,19 +289,23 @@ const findAll = async (filters) => {
   // Apply pagination to combined results
   const paginatedResults = allResults.slice(offset, offset + limit);
   
+  // Gunakan total count dari individual items (bukan master_pdf)
+  const total = { count: allResults.length };
+  
   return {
     items: paginatedResults,
     pagination: {
       page: parseInt(page),
       limit: parseInt(limit),
-      total: totalCount,
-      totalPages: Math.ceil(totalCount / limit)
+      total: parseInt(total.count), // Total berdasarkan master_pdf
+      totalPages: Math.ceil(total.count / limit)
     }
   };
 };
 
 /**
  * Find all items by master_catalog filter (filter by master_pdf.master_catalog column)
+ * Total count dihitung berdasarkan tabel master_pdf, tapi pagination tetap individual items
  */
 const findAllByMasterCatalog = async (filters, masterCatalog, offset) => {
   const {
@@ -274,13 +344,16 @@ const findAllByMasterCatalog = async (filters, masterCatalog, offset) => {
   // Apply pagination to combined results
   const paginatedResults = allResults.slice(offset, offset + limit);
   
+  // Gunakan total count dari individual items (bukan master_pdf)
+  const total = { count: allResults.length };
+  
   return {
     items: paginatedResults,
     pagination: {
       page: parseInt(page),
       limit: parseInt(limit),
-      total: totalCount,
-      totalPages: Math.ceil(totalCount / limit)
+      total: parseInt(total.count), // Total berdasarkan master_pdf
+      totalPages: Math.ceil(total.count / limit)
     }
   };
 };
@@ -385,8 +458,11 @@ const findAllByCatalogType = async (filters, masterCatalog, offset) => {
   
   const total = await countQuery.count('* as count').first();
   
+  // Format response data dengan field names yang konsisten
+  const formattedData = formatResponseData(data, masterCatalog);
+  
   return {
-    items: data,
+    items: formattedData,
     pagination: {
       page: parseInt(page),
       limit: parseInt(limit),
@@ -500,8 +576,11 @@ const findAllByCatalogTypeWithMasterCatalogFilter = async (filters, masterCatalo
   
   const total = await countQuery.count('* as count').first();
   
+  // Format response data dengan field names yang konsisten
+  const formattedData = formatResponseData(data, masterCatalog);
+  
   return {
-    items: data,
+    items: formattedData,
     pagination: {
       page: parseInt(page),
       limit: parseInt(limit),
@@ -562,6 +641,12 @@ const findByIdByCatalogType = async (id, masterCatalog) => {
     .whereNull(`${tableName}.deleted_at`)
     .first();
   
+  // Format response data dengan field names yang konsisten
+  if (data) {
+    const formattedData = formatResponseData([data], masterCatalog);
+    return formattedData[0];
+  }
+  
   return data;
 };
 
@@ -619,7 +704,10 @@ const findByMasterPdfIdByCatalogType = async (masterPdfId, masterCatalog) => {
     .whereNull(`${tableName}.deleted_at`)
     .orderBy(`${tableName}.created_at`, 'desc');
   
-  return data;
+  // Format response data dengan field names yang konsisten
+  const formattedData = formatResponseData(data, masterCatalog);
+  
+  return formattedData;
 };
 
 /**

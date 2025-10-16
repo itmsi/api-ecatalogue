@@ -18,12 +18,42 @@ const getListValidation = [
     .withMessage('Search harus berupa string'),
   body('sort_by')
     .optional()
-    .isString()
-    .withMessage('Sort by harus berupa string'),
+    .custom((value) => {
+      // Allow empty string, null, undefined, or valid string
+      if (!value || value.trim() === '') {
+        return true;
+      }
+      if (typeof value === 'string') {
+        return true;
+      }
+      throw new Error('Sort by harus berupa string');
+    })
+    .customSanitizer(value => {
+      // Default to 'created_at' if empty or not provided
+      if (!value || value.trim() === '') {
+        return 'created_at';
+      }
+      return value.trim();
+    }),
   body('sort_order')
     .optional()
-    .isIn(['asc', 'desc'])
-    .withMessage('Sort order harus asc atau desc'),
+    .custom((value) => {
+      // Allow empty string, null, undefined, or valid values
+      if (!value || value.trim() === '') {
+        return true;
+      }
+      if (['asc', 'desc'].includes(value.trim().toLowerCase())) {
+        return true;
+      }
+      throw new Error('Sort order harus asc atau desc');
+    })
+    .customSanitizer(value => {
+      // Default to 'desc' if empty or not provided
+      if (!value || value.trim() === '') {
+        return 'desc';
+      }
+      return value.trim().toLowerCase();
+    }),
   body('master_pdf_id')
     .optional({ nullable: true, checkFalsy: true })
     .custom((value) => {
