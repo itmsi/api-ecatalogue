@@ -193,11 +193,19 @@ const create = async (req, res) => {
           fileFotoUrl = uploadResult.url;
         } else {
           console.error('Failed to upload file_foto:', uploadResult.error || 'MinIO may be disabled or not configured');
-          await trx.rollback();
-          return errorResponse(res, { 
-            message: 'Gagal mengupload file foto',
-            detail: uploadResult.error || 'MinIO tidak aktif atau belum dikonfigurasi dengan benar'
-          }, 500);
+          
+          // Check if it's a fallback scenario (MinIO server not reachable)
+          if (uploadResult.fallback) {
+            console.warn('MinIO server not reachable, continuing without file upload');
+            // Continue without file upload, set fileFotoUrl to null
+            fileFotoUrl = null;
+          } else {
+            await trx.rollback();
+            return errorResponse(res, { 
+              message: 'Gagal mengupload file foto',
+              detail: uploadResult.error || 'MinIO tidak aktif atau belum dikonfigurasi dengan benar'
+            }, 500);
+          }
         }
       } catch (uploadError) {
         console.error('Error uploading file_foto:', uploadError);
@@ -346,11 +354,19 @@ const update = async (req, res) => {
           fileFotoUrl = uploadResult.url;
         } else {
           console.error('Failed to upload file_foto:', uploadResult.error || 'MinIO may be disabled or not configured');
-          await trx.rollback();
-          return errorResponse(res, { 
-            message: 'Gagal mengupload file foto',
-            detail: uploadResult.error || 'MinIO tidak aktif atau belum dikonfigurasi dengan benar'
-          }, 500);
+          
+          // Check if it's a fallback scenario (MinIO server not reachable)
+          if (uploadResult.fallback) {
+            console.warn('MinIO server not reachable, continuing without file upload');
+            // Continue without file upload, set fileFotoUrl to null
+            fileFotoUrl = null;
+          } else {
+            await trx.rollback();
+            return errorResponse(res, { 
+              message: 'Gagal mengupload file foto',
+              detail: uploadResult.error || 'MinIO tidak aktif atau belum dikonfigurasi dengan benar'
+            }, 500);
+          }
         }
       } catch (uploadError) {
         console.error('Error uploading file_foto:', uploadError);

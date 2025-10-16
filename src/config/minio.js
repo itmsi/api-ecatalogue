@@ -1,6 +1,23 @@
 require('dotenv').config();
 
 const Minio = require('minio');
+const http = require('http');
+const https = require('https');
+
+// Create custom agents with timeout
+const httpAgent = new http.Agent({
+  timeout: 10000, // 10 seconds timeout
+  keepAlive: true,
+  keepAliveMsecs: 1000,
+  maxSockets: 50
+});
+
+const httpsAgent = new https.Agent({
+  timeout: 10000, // 10 seconds timeout
+  keepAlive: true,
+  keepAliveMsecs: 1000,
+  maxSockets: 50
+});
 
 // Check if MinIO is enabled
 const isMinioEnabled = process.env.S3_PROVIDER === 'minio';
@@ -14,7 +31,7 @@ if (isMinioEnabled) {
   const endpointUrl = new URL(process.env.S3_ENDPOINT);
   const useSSL = endpointUrl.protocol === 'https:';
   
-  // Initialize MinIO client
+  // Initialize MinIO client with timeout configuration
   minioClient = new Minio.Client({
     endPoint: endpointUrl.hostname,
     port: endpointUrl.port ? parseInt(endpointUrl.port) : (useSSL ? 443 : 80),
@@ -23,7 +40,10 @@ if (isMinioEnabled) {
     secretKey: process.env.S3_SECRET_ACCESS_KEY,
     region: process.env.S3_REGION,
     s3ForcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
-    signatureVersion: process.env.S3_SIGNATURE_VERSION
+    signatureVersion: process.env.S3_SIGNATURE_VERSION,
+    // Add timeout configuration
+    httpAgent: httpAgent,
+    httpsAgent: httpsAgent
   });
 
   minioClientPrivate = new Minio.Client({
@@ -34,7 +54,10 @@ if (isMinioEnabled) {
     secretKey: process.env.S3_SECRET_ACCESS_KEY,
     region: process.env.S3_REGION,
     s3ForcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
-    signatureVersion: process.env.S3_SIGNATURE_VERSION
+    signatureVersion: process.env.S3_SIGNATURE_VERSION,
+    // Add timeout configuration
+    httpAgent: httpAgent,
+    httpsAgent: httpsAgent
   });
 }
 
@@ -49,9 +72,16 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
 
   try {
     // Check if bucket exists, if not create it
-    const bucketExists = await minioClient.bucketExists(bucket);
+    const bucketExists = await Promise.race([
+      minioClient.bucketExists(bucket),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket check timeout')), 10000))
+    ]);
+    
     if (!bucketExists) {
-      await minioClient.makeBucket(bucket, process.env.S3_REGION || 'us-east-1');
+      await Promise.race([
+        minioClient.makeBucket(bucket, process.env.S3_REGION || 'us-east-1'),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Bucket creation timeout')), 10000))
+      ]);
       console.log(`Bucket '${bucket}' created successfully.`);
     }
 
@@ -69,18 +99,24 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
     };
 
     try {
-      await minioClient.setBucketPolicy(bucket, JSON.stringify(bucketPolicy));
+      await Promise.race([
+        minioClient.setBucketPolicy(bucket, JSON.stringify(bucketPolicy)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Policy set timeout')), 10000))
+      ]);
       console.log(`Bucket policy set for '${bucket}'`);
     } catch (policyError) {
       console.warn(`Could not set bucket policy for '${bucket}':`, policyError.message);
     }
 
     // Upload the file with public-read ACL
-    await minioClient.putObject(bucket, objectName, buffer, {
-      'Content-Type': contentType
-    }, {
-      'x-amz-acl': 'public-read'
-    });
+    await Promise.race([
+      minioClient.putObject(bucket, objectName, buffer, {
+        'Content-Type': contentType
+      }, {
+        'x-amz-acl': 'public-read'
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 30000))
+    ]);
 
     // Generate public URL
     const endpointUrl = new URL(process.env.S3_ENDPOINT);
@@ -97,6 +133,18 @@ const uploadToMinio = async (objectName, buffer, contentType = 'application/octe
     };
   } catch (error) {
     console.error('Error uploading to MinIO:', error);
+    
+    // Check if it's a connection timeout error
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED' || error.message.includes('timeout')) {
+      console.warn('MinIO server is not reachable, falling back to local storage');
+      return {
+        success: false,
+        error: 'MinIO server tidak dapat dijangkau. Silakan coba lagi nanti atau hubungi administrator.',
+        url: '',
+        fallback: true
+      };
+    }
+    
     return {
       success: false,
       error: error.message,
