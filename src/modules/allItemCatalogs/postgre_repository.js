@@ -1,4 +1,5 @@
 const { pgCore: db } = require('../../config/database');
+const allItemParentsCatalogsRepo = require('../../repository/postgres/all_item_parents_catalogs');
 
 // Mapping table names based on master_catalog
 const getTableName = (masterCatalog) => {
@@ -807,9 +808,40 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
     }
   }
   
+  // Insert atau update ke tabel all_item_parents_catalogs
+  // Ini akan membuat record parent untuk mengelompokkan data berdasarkan master_pdf_id, master_catalog, master_category_id, type_category_id
+  let parentCatalogRecord = null;
+  if (results.length > 0) {
+    console.log('=== REPOSITORY CREATE: Creating/Updating parent catalog record ===');
+    console.log('masterPdfId:', masterPdfId);
+    console.log('masterCatalog:', masterCatalog);
+    console.log('masterCategoryId:', masterCategoryId);
+    console.log('typeCategoryId:', typeCategoryId);
+    console.log('fileFotoUrl:', fileFotoUrl);
+    
+    try {
+      parentCatalogRecord = await allItemParentsCatalogsRepo.findOrCreateWithTransaction(
+        trx,
+        masterPdfId,
+        masterCatalog,
+        masterCategoryId,
+        typeCategoryId,
+        fileFotoUrl,
+        userId
+      );
+      
+      console.log('Parent catalog record created/updated:', parentCatalogRecord);
+    } catch (error) {
+      console.error('Error creating/updating parent catalog record:', error);
+      // Tidak throw error karena ini bukan operasi kritis
+      // Log error tapi tetap lanjutkan
+    }
+  }
+  
   return {
     master_pdf_id: masterPdfId,
-    items: results
+    items: results,
+    parent_catalog: parentCatalogRecord
   };
 };
 
@@ -936,9 +968,40 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
     }
   }
   
+  // Insert atau update ke tabel all_item_parents_catalogs
+  // Ini akan membuat record parent untuk mengelompokkan data berdasarkan master_pdf_id, master_catalog, master_category_id, type_category_id
+  let parentCatalogRecord = null;
+  if (results.length > 0) {
+    console.log('=== REPOSITORY UPDATE: Creating/Updating parent catalog record ===');
+    console.log('masterPdfId:', masterPdfId);
+    console.log('masterCatalog:', masterCatalog);
+    console.log('masterCategoryId:', masterCategoryId);
+    console.log('typeCategoryId:', typeCategoryId);
+    console.log('fileFotoUrl:', fileFotoUrl);
+    
+    try {
+      parentCatalogRecord = await allItemParentsCatalogsRepo.findOrCreateWithTransaction(
+        trx,
+        masterPdfId,
+        masterCatalog,
+        masterCategoryId,
+        typeCategoryId,
+        fileFotoUrl,
+        userId
+      );
+      
+      console.log('Parent catalog record created/updated:', parentCatalogRecord);
+    } catch (error) {
+      console.error('Error creating/updating parent catalog record:', error);
+      // Tidak throw error karena ini bukan operasi kritis
+      // Log error tapi tetap lanjutkan
+    }
+  }
+  
   return {
     master_pdf_id: masterPdfId,
-    items: results
+    items: results,
+    parent_catalog: parentCatalogRecord
   };
 };
 
@@ -1052,6 +1115,30 @@ const findDataMasterCategoryByMasterPdfId = async (masterPdfId) => {
       Object.values(groupedItems).forEach(group => {
         dataMasterCategory.push(group);
       });
+    }
+  }
+  
+  // Sekarang kita perlu mengambil file_foto dari tabel all_item_parents_catalogs
+  // untuk setiap group yang sudah dibuat
+  for (let i = 0; i < dataMasterCategory.length; i++) {
+    const group = dataMasterCategory[i];
+    
+    // Query untuk mendapatkan file_foto dari all_item_parents_catalogs
+    const parentCatalogData = await db('all_item_parents_catalogs')
+      .select('file_foto')
+      .where({
+        master_pdf_id: masterPdfId,
+        master_catalog: group.master_catalog,
+        master_category_id: group.master_category_id,
+        type_category_id: group.type_category_id,
+        is_delete: false
+      })
+      .whereNull('deleted_at')
+      .first();
+    
+    // Tambahkan file_foto ke group jika ada
+    if (parentCatalogData && parentCatalogData.file_foto) {
+      dataMasterCategory[i].file_foto = parentCatalogData.file_foto;
     }
   }
   
