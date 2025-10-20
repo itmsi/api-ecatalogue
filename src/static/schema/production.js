@@ -133,46 +133,93 @@ const productionSchemas = {
         type: 'boolean',
         description: 'Soft deletion flag',
         example: false
+      },
+      details: {
+        type: 'array',
+        description: 'Array of production details',
+        items: {
+          $ref: '#/components/schemas/ProductionDetail'
+        }
+      }
+    }
+  },
+  ProductionDetail: {
+    type: 'object',
+    properties: {
+      production_detail_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Unique production detail identifier',
+        example: '123e4567-e89b-12d3-a456-426614174000'
+      },
+      production_id: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Production reference',
+        example: '123e4567-e89b-12d3-a456-426614174001'
+      },
+      master_pdf_id: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Master PDF reference',
+        example: '123e4567-e89b-12d3-a456-426614174002'
+      },
+      created_at: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Creation timestamp',
+        example: '2025-01-01T00:00:00.000Z'
+      },
+      created_by: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Creator user/employee ID',
+        example: '123e4567-e89b-12d3-a456-426614174003'
+      },
+      updated_at: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Last update timestamp',
+        example: '2025-01-01T00:00:00.000Z'
+      },
+      updated_by: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Last updater user/employee ID',
+        example: '123e4567-e89b-12d3-a456-426614174004'
+      },
+      deleted_at: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Deletion timestamp (null if not deleted)',
+        example: null
+      },
+      deleted_by: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Deleter user/employee ID',
+        example: null
+      },
+      is_delete: {
+        type: 'boolean',
+        description: 'Soft deletion flag',
+        example: false
       }
     }
   },
   ProductionDetailInput: {
     type: 'object',
     properties: {
-      production_detail_description: {
-        type: 'string',
-        description: 'Production detail description',
-        example: 'Engine and transmission configuration'
-      },
-      engine_id: {
+      master_pdf_id: {
         type: 'string',
         format: 'uuid',
-        description: 'Engine reference',
+        description: 'Master PDF reference',
         example: '123e4567-e89b-12d3-a456-426614174001'
-      },
-      steering_id: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Steering reference',
-        example: '123e4567-e89b-12d3-a456-426614174002'
-      },
-      cabine_id: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Cabine reference',
-        example: '123e4567-e89b-12d3-a456-426614174003'
-      },
-      axle_id: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Axle reference',
-        example: '123e4567-e89b-12d3-a456-426614174004'
-      },
-      transmission_id: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Transmission reference',
-        example: '123e4567-e89b-12d3-a456-426614174005'
       }
     }
   },
@@ -182,72 +229,84 @@ const productionSchemas = {
       vin_number: {
         type: 'string',
         maxLength: 255,
+        nullable: true,
         description: 'Vehicle Identification Number',
         example: 'VIN1234567890ABCDEF'
       },
       production_name_en: {
         type: 'string',
         maxLength: 255,
+        nullable: true,
         description: 'Production name in English',
         example: 'Toyota Camry 2024'
       },
       production_name_cn: {
         type: 'string',
         maxLength: 255,
+        nullable: true,
         description: 'Production name in Chinese',
         example: '丰田凯美瑞 2024'
       },
       production_sequence_number: {
         type: 'string',
         maxLength: 50,
+        nullable: true,
         description: 'Production sequence number',
         example: '1001'
       },
       production_month: {
         type: 'string',
         maxLength: 50,
+        nullable: true,
         description: 'Production month',
         example: 'March'
       },
       production_year: {
         type: 'string',
         maxLength: 50,
+        nullable: true,
         description: 'Production year',
         example: '2024'
       },
       production_description: {
         type: 'string',
         maxLength: 1000,
+        nullable: true,
         description: 'Production description',
         example: 'High-quality production with premium materials'
       },
       production_location_id: {
         type: 'string',
         format: 'uuid',
+        nullable: true,
         description: 'Location reference',
         example: '123e4567-e89b-12d3-a456-426614174001'
       },
       production_brand_id: {
         type: 'string',
         format: 'uuid',
+        nullable: true,
         description: 'Brand reference',
         example: '123e4567-e89b-12d3-a456-426614174002'
       },
       production_driver_type_id: {
         type: 'string',
         format: 'uuid',
+        nullable: true,
         description: 'Driver type reference',
         example: '123e4567-e89b-12d3-a456-426614174003'
       },
       production_vehicle_weight_id: {
         type: 'string',
         format: 'uuid',
+        nullable: true,
         description: 'Vehicle weight reference',
         example: '123e4567-e89b-12d3-a456-426614174004'
       },
       production_world_manufacturing_plant_id: {
         type: 'string',
         format: 'uuid',
+        nullable: true,
         description: 'World manufacturing plant reference',
         example: '123e4567-e89b-12d3-a456-426614174005'
       },
@@ -259,12 +318,7 @@ const productionSchemas = {
         },
         example: [
           {
-            "production_detail_description": "Configuration 1",
-            "engine_id": "123e4567-e89b-12d3-a456-426614174001",
-            "steering_id": "123e4567-e89b-12d3-a456-426614174002",
-            "cabine_id": "123e4567-e89b-12d3-a456-426614174003",
-            "axle_id": "123e4567-e89b-12d3-a456-426614174004",
-            "transmission_id": "123e4567-e89b-12d3-a456-426614174005"
+            "master_pdf_id": "123e4567-e89b-12d3-a456-426614174001"
           }
         ]
       }

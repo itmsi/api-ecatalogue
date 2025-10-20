@@ -11,83 +11,117 @@ const createValidation = [
     .trim(),
   body('production_name_en')
     .optional()
-    .isLength({ max: 255 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 255;
+    })
     .withMessage('Production name EN maksimal 255 karakter')
     .trim(),
   body('production_name_cn')
     .optional()
-    .isLength({ max: 255 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 255;
+    })
     .withMessage('Production name CN maksimal 255 karakter')
     .trim(),
   body('production_sequence_number')
     .optional()
-    .isLength({ max: 50 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 50;
+    })
     .withMessage('Production sequence number maksimal 50 karakter')
     .trim(),
   body('production_month')
     .optional()
-    .isLength({ max: 50 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 50;
+    })
     .withMessage('Production month maksimal 50 karakter')
     .trim(),
   body('production_year')
     .optional()
-    .isLength({ max: 50 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 50;
+    })
     .withMessage('Production year maksimal 50 karakter')
     .trim(),
   body('production_description')
     .optional()
-    .isLength({ max: 1000 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 1000;
+    })
     .withMessage('Production description maksimal 1000 karakter')
     .trim(),
   body('production_location_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Location ID tidak valid'),
   body('production_brand_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Brand ID tidak valid'),
   body('production_driver_type_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Driver Type ID tidak valid'),
   body('production_vehicle_weight_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Vehicle Weight ID tidak valid'),
   body('production_world_manufacturing_plant_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production World Manufacturing Plant ID tidak valid'),
   body('data_details')
     .optional()
     .isArray()
     .withMessage('Data details harus berupa array'),
-  body('data_details.*.production_detail_description')
-    .optional()
-    .isLength({ max: 1000 })
-    .withMessage('Production detail description maksimal 1000 karakter')
-    .trim(),
-  body('data_details.*.engine_id')
+  body('data_details.*.master_pdf_id')
     .optional()
     .isUUID()
-    .withMessage('Format Engine ID tidak valid'),
-  body('data_details.*.steering_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Steering ID tidak valid'),
-  body('data_details.*.cabine_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Cabine ID tidak valid'),
-  body('data_details.*.axle_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Axle ID tidak valid'),
-  body('data_details.*.transmission_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Transmission ID tidak valid'),
+    .withMessage('Format Master PDF ID tidak valid'),
 ];
 
 /**
@@ -106,83 +140,117 @@ const updateValidation = [
     .trim(),
   body('production_name_en')
     .optional()
-    .isLength({ max: 255 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 255;
+    })
     .withMessage('Production name EN maksimal 255 karakter')
     .trim(),
   body('production_name_cn')
     .optional()
-    .isLength({ max: 255 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 255;
+    })
     .withMessage('Production name CN maksimal 255 karakter')
     .trim(),
   body('production_sequence_number')
     .optional()
-    .isLength({ max: 50 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 50;
+    })
     .withMessage('Production sequence number maksimal 50 karakter')
     .trim(),
   body('production_month')
     .optional()
-    .isLength({ max: 50 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 50;
+    })
     .withMessage('Production month maksimal 50 karakter')
     .trim(),
   body('production_year')
     .optional()
-    .isLength({ max: 50 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 50;
+    })
     .withMessage('Production year maksimal 50 karakter')
     .trim(),
   body('production_description')
     .optional()
-    .isLength({ max: 1000 })
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return value.length <= 1000;
+    })
     .withMessage('Production description maksimal 1000 karakter')
     .trim(),
   body('production_location_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Location ID tidak valid'),
   body('production_brand_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Brand ID tidak valid'),
   body('production_driver_type_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Driver Type ID tidak valid'),
   body('production_vehicle_weight_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production Vehicle Weight ID tidak valid'),
   body('production_world_manufacturing_plant_id')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    })
     .withMessage('Format Production World Manufacturing Plant ID tidak valid'),
   body('data_details')
     .optional()
     .isArray()
     .withMessage('Data details harus berupa array'),
-  body('data_details.*.production_detail_description')
-    .optional()
-    .isLength({ max: 1000 })
-    .withMessage('Production detail description maksimal 1000 karakter')
-    .trim(),
-  body('data_details.*.engine_id')
+  body('data_details.*.master_pdf_id')
     .optional()
     .isUUID()
-    .withMessage('Format Engine ID tidak valid'),
-  body('data_details.*.steering_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Steering ID tidak valid'),
-  body('data_details.*.cabine_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Cabine ID tidak valid'),
-  body('data_details.*.axle_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Axle ID tidak valid'),
-  body('data_details.*.transmission_id')
-    .optional()
-    .isUUID()
-    .withMessage('Format Transmission ID tidak valid'),
+    .withMessage('Format Master PDF ID tidak valid'),
 ];
 
 /**

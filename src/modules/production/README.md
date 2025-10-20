@@ -59,12 +59,7 @@ Module ini menyediakan:
 |--------|------|-------------|
 | production_detail_id | UUID | Primary key (auto-generated) |
 | production_id | UUID | Foreign key ke productions (nullable) |
-| production_detail_description | TEXT | Deskripsi detail (nullable) |
-| engine_id | UUID | Foreign key ke engines (nullable) |
-| steering_id | UUID | Foreign key ke steerings (nullable) |
-| cabine_id | UUID | Foreign key ke cabines (nullable) |
-| axle_id | UUID | Foreign key ke axles (nullable) |
-| transmission_id | UUID | Foreign key ke transmissions (nullable) |
+| master_pdf_id | UUID | Foreign key ke master_pdf (nullable) |
 | created_at | TIMESTAMP | Waktu pembuatan |
 | created_by | UUID | User yang membuat |
 | updated_at | TIMESTAMP | Waktu update terakhir |
@@ -211,20 +206,10 @@ Content-Type: application/json
   "production_world_manufacturing_plant_id": "uuid",
   "data_details": [
     {
-      "production_detail_description": "Detail 1",
-      "engine_id": "uuid",
-      "steering_id": "uuid",
-      "cabine_id": "uuid",
-      "axle_id": "uuid",
-      "transmission_id": "uuid"
+      "master_pdf_id": "uuid"
     },
     {
-      "production_detail_description": "Detail 2",
-      "engine_id": "uuid",
-      "steering_id": "uuid",
-      "cabine_id": "uuid",
-      "axle_id": "uuid",
-      "transmission_id": "uuid"
+      "master_pdf_id": "uuid"
     }
   ]
 }
@@ -306,12 +291,7 @@ Content-Type: application/json
   "production_world_manufacturing_plant_id": "uuid",
   "data_details": [
     {
-      "production_detail_description": "Updated Detail 1",
-      "engine_id": "uuid",
-      "steering_id": "uuid",
-      "cabine_id": "uuid",
-      "axle_id": "uuid",
-      "transmission_id": "uuid"
+      "master_pdf_id": "uuid"
     }
   ]
 }
@@ -406,12 +386,7 @@ Authorization: Bearer {token}
 - `production_vehicle_weight_id`: Optional, must be valid UUID
 - `production_world_manufacturing_plant_id`: Optional, must be valid UUID
 - `data_details`: Optional, must be array
-- `data_details.*.production_detail_description`: Optional, max 1000 characters
-- `data_details.*.engine_id`: Optional, must be valid UUID
-- `data_details.*.steering_id`: Optional, must be valid UUID
-- `data_details.*.cabine_id`: Optional, must be valid UUID
-- `data_details.*.axle_id`: Optional, must be valid UUID
-- `data_details.*.transmission_id`: Optional, must be valid UUID
+- `data_details.*.master_pdf_id`: Optional, must be valid UUID
 
 ### Update Validation
 - `id`: Required, must be valid UUID (from params)
@@ -457,12 +432,7 @@ curl -X POST http://localhost:3000/api/catalogs/productions/create \
     "production_description": "Test description",
     "data_details": [
       {
-        "production_detail_description": "Detail 1",
-        "engine_id": "engine-uuid",
-        "steering_id": "steering-uuid",
-        "cabine_id": "cabine-uuid",
-        "axle_id": "axle-uuid",
-        "transmission_id": "transmission-uuid"
+        "master_pdf_id": "master-pdf-uuid"
       }
     ]
   }'
