@@ -846,9 +846,8 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
 };
 
 /**
- * Update items by master_pdf_id dengan transaction (UPSERT)
- * Jika kombinasi master_pdf_id + master_id + type_id + target_id sudah ada, maka UPDATE
- * Jika belum ada, maka INSERT
+ * Update items by master_pdf_id dengan transaction (DELETE dan INSERT ulang)
+ * Semua data_items lama akan dihapus dan diganti dengan data baru
  */
 const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userId, fileFotoUrl = null, masterCatalog, masterCategoryId = null, typeCategoryId = null) => {
   // Verify that master_pdf_id exists
@@ -880,9 +879,33 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
   console.log('=== REPOSITORY UPDATE: fileFotoUrl:', fileFotoUrl);
   console.log('=== REPOSITORY UPDATE: dataItems count:', dataItems.length);
   
+  // STEP 1: DELETE semua data_items lama yang terkait dengan master_pdf_id dan master_category_id, type_category_id
+  console.log('=== REPOSITORY UPDATE: Deleting old data_items ===');
+  const deleteWhereClause = {
+    master_pdf_id: finalMasterPdfId,
+    is_delete: false
+  };
+  
+  // Add conditions for master_id, type_id jika ada
+  if (masterCategoryId) deleteWhereClause[relatedTables.masterIdField] = masterCategoryId;
+  if (typeCategoryId) deleteWhereClause[relatedTables.typeIdField] = typeCategoryId;
+  
+  const deletedItems = await trx(tableName)
+    .where(deleteWhereClause)
+    .whereNull('deleted_at')
+    .update({
+      is_delete: true,
+      deleted_at: trx.fn.now(),
+      deleted_by: userId
+    })
+    .returning('*');
+  
+  console.log('=== REPOSITORY UPDATE: Deleted items count:', deletedItems.length);
+  
+  // STEP 2: INSERT semua data_items baru
+  console.log('=== REPOSITORY UPDATE: Inserting new data_items ===');
   const results = [];
   
-  // Process each item - check if exists then update or insert
   for (const item of dataItems) {
     console.log('=== REPOSITORY UPDATE: Processing item ===');
     console.log('Raw item from dataItems:', JSON.stringify(item, null, 2));
@@ -901,57 +924,21 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
       file_foto: fileFotoUrl || null
     };
     
-    console.log('ItemData to insert/update:', JSON.stringify(itemData, null, 2));
+    console.log('ItemData to insert:', JSON.stringify(itemData, null, 2));
     
-    // Check if item already exists based on unique combination
-    const whereClause = {
-      master_pdf_id: finalMasterPdfId,
-      is_delete: false
-    };
+    // INSERT new item
+    const [inserted] = await trx(tableName)
+      .insert({
+        ...itemData,
+        created_at: trx.fn.now(),
+        created_by: userId,
+        updated_at: trx.fn.now(),
+        updated_by: userId,
+        is_delete: false
+      })
+      .returning('*');
     
-    // Add conditions for master_id, type_id, target_id only if they are not null
-    if (masterCategoryId) whereClause[relatedTables.masterIdField] = masterCategoryId;
-    if (typeCategoryId) whereClause[relatedTables.typeIdField] = typeCategoryId;
-    if (item.target_id) whereClause.target_id = item.target_id;
-    
-    const existing = await trx(tableName)
-      .where(whereClause)
-      .whereNull('deleted_at')
-      .first();
-    
-    if (existing) {
-      // UPDATE existing item
-      const updateData = { ...itemData };
-      // Only update file_foto if new file is uploaded
-      if (!fileFotoUrl) {
-        delete updateData.file_foto;
-      }
-      
-      const [updated] = await trx(tableName)
-        .where({ [idFieldName]: existing[idFieldName] })
-        .update({
-          ...updateData,
-          updated_at: trx.fn.now(),
-          updated_by: userId
-        })
-        .returning('*');
-      
-      results.push(updated);
-    } else {
-      // INSERT new item
-      const [inserted] = await trx(tableName)
-        .insert({
-          ...itemData,
-          created_at: trx.fn.now(),
-          created_by: userId,
-          updated_at: trx.fn.now(),
-          updated_by: userId,
-          is_delete: false
-        })
-        .returning('*');
-      
-      results.push(inserted);
-    }
+    results.push(inserted);
   }
   
   // Insert atau update ke tabel all_item_parents_catalogs
@@ -987,6 +974,7 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
   return {
     master_pdf_id: finalMasterPdfId,
     items: results,
+    deleted_items: deletedItems,
     parent_catalog: parentCatalogRecord
   };
 };
