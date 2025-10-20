@@ -161,7 +161,7 @@ const allItemCatalogsPaths = {
             type: 'string',
             format: 'uuid'
           },
-          description: 'Master PDF ID'
+          description: 'Master PDF ID (master_pdf_id) - ID dari tabel master_pdf'
         }
       ],
         responses: {
@@ -210,8 +210,8 @@ const allItemCatalogsPaths = {
 
     put: {
       tags: ['All Item Catalogs'],
-      summary: 'Update item catalog by ID',
-      description: 'Update an existing item catalog with new data',
+      summary: 'Update item catalog by master_pdf_id',
+      description: 'Update an existing item catalog with new data using master_pdf_id',
       security: [
         {
           bearerAuth: []
@@ -226,7 +226,7 @@ const allItemCatalogsPaths = {
             type: 'string',
             format: 'uuid'
           },
-          description: 'Item catalog ID'
+          description: 'Master PDF ID (master_pdf_id) - ID dari tabel master_pdf'
         }
       ],
       requestBody: {
@@ -295,8 +295,8 @@ const allItemCatalogsPaths = {
 
     delete: {
       tags: ['All Item Catalogs'],
-      summary: 'Delete item catalog by ID (soft delete)',
-      description: 'Soft delete an item catalog by its ID',
+      summary: 'Delete item catalog by master_pdf_id (soft delete)',
+      description: 'Soft delete an item catalog and all its items using master_pdf_id',
       security: [
         {
           bearerAuth: []
@@ -311,7 +311,7 @@ const allItemCatalogsPaths = {
             type: 'string',
             format: 'uuid'
           },
-          description: 'Item catalog ID'
+          description: 'Master PDF ID (master_pdf_id) - ID dari tabel master_pdf'
         }
       ],
       responses: {

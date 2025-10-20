@@ -654,10 +654,10 @@ const findByIdByCatalogType = async (id, masterCatalog) => {
 /**
  * Find all items by master_pdf_id
  */
-const findByMasterPdfId = async (masterPdfId, masterCatalog = null) => {
+const findByMasterPdfId = async (finalMasterPdfId, masterCatalog = null) => {
   // If master_catalog is specified and not empty, query specific table
   if (masterCatalog && masterCatalog.trim() !== '') {
-    return await findByMasterPdfIdByCatalogType(masterPdfId, masterCatalog);
+    return await findByMasterPdfIdByCatalogType(finalMasterPdfId, masterCatalog);
   }
   
   // If no master_catalog specified, search in all tables and combine results
@@ -665,7 +665,7 @@ const findByMasterPdfId = async (masterPdfId, masterCatalog = null) => {
   const allResults = [];
   
   for (const catalogType of allCatalogTypes) {
-    const result = await findByMasterPdfIdByCatalogType(masterPdfId, catalogType);
+    const result = await findByMasterPdfIdByCatalogType(finalMasterPdfId, catalogType);
     if (result.length > 0) {
       allResults.push(...result);
     }
@@ -680,7 +680,7 @@ const findByMasterPdfId = async (masterPdfId, masterCatalog = null) => {
 /**
  * Find all items by master_pdf_id for specific catalog type
  */
-const findByMasterPdfIdByCatalogType = async (masterPdfId, masterCatalog) => {
+const findByMasterPdfIdByCatalogType = async (finalMasterPdfId, masterCatalog) => {
   const tableName = getTableName(masterCatalog);
   const relatedTables = getRelatedTables(masterCatalog);
   
@@ -701,7 +701,7 @@ const findByMasterPdfIdByCatalogType = async (masterPdfId, masterCatalog) => {
     .leftJoin('master_pdf', `${tableName}.master_pdf_id`, 'master_pdf.master_pdf_id')
     .leftJoin(relatedTables.master, `${tableName}.${relatedTables.masterIdField}`, `${relatedTables.master}.${getMasterTableIdField(masterCatalog)}`)
     .leftJoin(relatedTables.type, `${tableName}.${relatedTables.typeIdField}`, `${relatedTables.type}.${relatedTables.typeIdField}`)
-    .where({ [`${tableName}.master_pdf_id`]: masterPdfId, [`${tableName}.is_delete`]: false })
+    .where({ [`${tableName}.master_pdf_id`]: finalMasterPdfId, [`${tableName}.is_delete`]: false })
     .whereNull(`${tableName}.deleted_at`)
     .orderBy(`${tableName}.created_at`, 'desc');
   
@@ -718,7 +718,7 @@ const findByMasterPdfIdByCatalogType = async (masterPdfId, masterCatalog) => {
  */
 const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUrl = null, masterCatalog, masterCategoryId = null, typeCategoryId = null) => {
   // Find or create master_pdf dengan transaction
-  const masterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, masterCatalog, userId);
+  const finalMasterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, masterCatalog, userId);
   
   const tableName = getTableName(masterCatalog);
   const relatedTables = getRelatedTables(masterCatalog);
@@ -728,7 +728,7 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
     throw new Error(`Invalid master_catalog: ${masterCatalog}`);
   }
   
-  console.log('=== REPOSITORY CREATE: masterPdfId:', masterPdfId);
+  console.log('=== REPOSITORY CREATE: finalMasterPdfId:', finalMasterPdfId);
   console.log('=== REPOSITORY CREATE: masterCatalog:', masterCatalog);
   console.log('=== REPOSITORY CREATE: tableName:', tableName);
   console.log('=== REPOSITORY CREATE: fileFotoUrl:', fileFotoUrl);
@@ -742,7 +742,7 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
     console.log('Raw item from dataItems:', JSON.stringify(item, null, 2));
     
     const itemData = {
-      master_pdf_id: masterPdfId,
+      master_pdf_id: finalMasterPdfId,
       [relatedTables.masterIdField]: masterCategoryId || null, // Set from request body
       [relatedTables.typeIdField]: typeCategoryId || null, // Set from request body
       target_id: item.target_id || null,
@@ -759,7 +759,7 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
     
     // Check if item already exists based on unique combination
     const whereClause = {
-      master_pdf_id: masterPdfId,
+      master_pdf_id: finalMasterPdfId,
       is_delete: false
     };
     
@@ -813,7 +813,7 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
   let parentCatalogRecord = null;
   if (results.length > 0) {
     console.log('=== REPOSITORY CREATE: Creating/Updating parent catalog record ===');
-    console.log('masterPdfId:', masterPdfId);
+    console.log('finalMasterPdfId:', finalMasterPdfId);
     console.log('masterCatalog:', masterCatalog);
     console.log('masterCategoryId:', masterCategoryId);
     console.log('typeCategoryId:', typeCategoryId);
@@ -822,7 +822,7 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
     try {
       parentCatalogRecord = await allItemParentsCatalogsRepo.findOrCreateWithTransaction(
         trx,
-        masterPdfId,
+        finalMasterPdfId,
         masterCatalog,
         masterCategoryId,
         typeCategoryId,
@@ -839,7 +839,7 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
   }
   
   return {
-    master_pdf_id: masterPdfId,
+    master_pdf_id: finalMasterPdfId,
     items: results,
     parent_catalog: parentCatalogRecord
   };
@@ -850,47 +850,33 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
  * Jika kombinasi master_pdf_id + master_id + type_id + target_id sudah ada, maka UPDATE
  * Jika belum ada, maka INSERT
  */
-const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFotoUrl = null, masterCatalog, masterCategoryId = null, typeCategoryId = null) => {
-  // Find the item first to determine which table it belongs to
-  let existingItem = null;
-  let itemTableName = null;
-  let itemRelatedTables = null;
-  let itemIdFieldName = null;
+const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userId, fileFotoUrl = null, masterCatalog, masterCategoryId = null, typeCategoryId = null) => {
+  // Verify that master_pdf_id exists
+  const masterPdfExists = await trx('all_item_parents_catalogs')
+    .where({ master_pdf_id: masterPdfId, is_delete: false })
+    .whereNull('deleted_at')
+    .first();
   
-  // Search in all tables to find the item
-  const allCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
-  
-  for (const catalogType of allCatalogTypes) {
-    const tableName = getTableName(catalogType);
-    const relatedTables = getRelatedTables(catalogType);
-    const idFieldName = getIdFieldName(catalogType);
-    
-    if (!tableName || !relatedTables || !idFieldName) continue;
-    
-    const found = await trx(tableName)
-      .where({ [idFieldName]: id, is_delete: false })
-      .whereNull('deleted_at')
-      .first();
-    
-    if (found) {
-      existingItem = found;
-      itemTableName = tableName;
-      itemRelatedTables = relatedTables;
-      itemIdFieldName = idFieldName;
-      break;
-    }
-  }
-  
-  if (!existingItem) {
+  if (!masterPdfExists) {
     return null;
   }
   
   // Find or create master_pdf dengan transaction
-  const masterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, masterCatalog, userId);
+  const finalMasterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, masterCatalog, userId);
+  
+  // Determine table and related fields based on masterCatalog
+  const tableName = getTableName(masterCatalog);
+  const relatedTables = getRelatedTables(masterCatalog);
+  const idFieldName = getIdFieldName(masterCatalog);
+  
+  if (!tableName || !relatedTables || !idFieldName) {
+    throw new Error(`Invalid master_catalog: ${masterCatalog}`);
+  }
   
   console.log('=== REPOSITORY UPDATE: masterPdfId:', masterPdfId);
+  console.log('=== REPOSITORY UPDATE: finalMasterPdfId:', finalMasterPdfId);
   console.log('=== REPOSITORY UPDATE: masterCatalog:', masterCatalog);
-  console.log('=== REPOSITORY UPDATE: itemTableName:', itemTableName);
+  console.log('=== REPOSITORY UPDATE: tableName:', tableName);
   console.log('=== REPOSITORY UPDATE: fileFotoUrl:', fileFotoUrl);
   console.log('=== REPOSITORY UPDATE: dataItems count:', dataItems.length);
   
@@ -902,9 +888,9 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
     console.log('Raw item from dataItems:', JSON.stringify(item, null, 2));
     
     const itemData = {
-      master_pdf_id: masterPdfId,
-      [itemRelatedTables.masterIdField]: masterCategoryId || null, // Set from request body
-      [itemRelatedTables.typeIdField]: typeCategoryId || null, // Set from request body
+      master_pdf_id: finalMasterPdfId,
+      [relatedTables.masterIdField]: masterCategoryId || null, // Set from request body
+      [relatedTables.typeIdField]: typeCategoryId || null, // Set from request body
       target_id: item.target_id || null,
       diagram_serial_number: item.diagram_serial_number || null,
       part_number: item.part_number || null,
@@ -919,16 +905,16 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
     
     // Check if item already exists based on unique combination
     const whereClause = {
-      master_pdf_id: masterPdfId,
+      master_pdf_id: finalMasterPdfId,
       is_delete: false
     };
     
     // Add conditions for master_id, type_id, target_id only if they are not null
-    if (masterCategoryId) whereClause[itemRelatedTables.masterIdField] = masterCategoryId;
-    if (typeCategoryId) whereClause[itemRelatedTables.typeIdField] = typeCategoryId;
+    if (masterCategoryId) whereClause[relatedTables.masterIdField] = masterCategoryId;
+    if (typeCategoryId) whereClause[relatedTables.typeIdField] = typeCategoryId;
     if (item.target_id) whereClause.target_id = item.target_id;
     
-    const existing = await trx(itemTableName)
+    const existing = await trx(tableName)
       .where(whereClause)
       .whereNull('deleted_at')
       .first();
@@ -941,8 +927,8 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
         delete updateData.file_foto;
       }
       
-      const [updated] = await trx(itemTableName)
-        .where({ [itemIdFieldName]: existing[itemIdFieldName] })
+      const [updated] = await trx(tableName)
+        .where({ [idFieldName]: existing[idFieldName] })
         .update({
           ...updateData,
           updated_at: trx.fn.now(),
@@ -953,7 +939,7 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
       results.push(updated);
     } else {
       // INSERT new item
-      const [inserted] = await trx(itemTableName)
+      const [inserted] = await trx(tableName)
         .insert({
           ...itemData,
           created_at: trx.fn.now(),
@@ -973,7 +959,7 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
   let parentCatalogRecord = null;
   if (results.length > 0) {
     console.log('=== REPOSITORY UPDATE: Creating/Updating parent catalog record ===');
-    console.log('masterPdfId:', masterPdfId);
+    console.log('finalMasterPdfId:', finalMasterPdfId);
     console.log('masterCatalog:', masterCatalog);
     console.log('masterCategoryId:', masterCategoryId);
     console.log('typeCategoryId:', typeCategoryId);
@@ -982,7 +968,7 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
     try {
       parentCatalogRecord = await allItemParentsCatalogsRepo.findOrCreateWithTransaction(
         trx,
-        masterPdfId,
+        finalMasterPdfId,
         masterCatalog,
         masterCategoryId,
         typeCategoryId,
@@ -999,27 +985,37 @@ const updateWithTransaction = async (trx, id, namePdf, dataItems, userId, fileFo
   }
   
   return {
-    master_pdf_id: masterPdfId,
+    master_pdf_id: finalMasterPdfId,
     items: results,
     parent_catalog: parentCatalogRecord
   };
 };
 
 /**
- * Soft delete item
+ * Soft delete items by master_pdf_id
  */
-const remove = async (id, userId) => {
-  // Search in all tables to find and delete the item
+const remove = async (masterPdfId, userId) => {
+  // Verify that master_pdf_id exists
+  const masterPdfExists = await db('all_item_parents_catalogs')
+    .where({ master_pdf_id: masterPdfId, is_delete: false })
+    .whereNull('deleted_at')
+    .first();
+  
+  if (!masterPdfExists) {
+    return null;
+  }
+  
+  // Soft delete all items with the same master_pdf_id
   const allCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
+  const deletedItems = [];
   
   for (const catalogType of allCatalogTypes) {
     const tableName = getTableName(catalogType);
-    const idFieldName = getIdFieldName(catalogType);
     
-    if (!tableName || !idFieldName) continue;
+    if (!tableName) continue;
     
-    const [result] = await db(tableName)
-      .where({ [idFieldName]: id, is_delete: false })
+    const results = await db(tableName)
+      .where({ master_pdf_id: masterPdfId, is_delete: false })
       .whereNull('deleted_at')
       .update({
         is_delete: true,
@@ -1028,20 +1024,33 @@ const remove = async (id, userId) => {
       })
       .returning('*');
     
-    if (result) {
-      return result;
-    }
+    deletedItems.push(...results);
   }
   
-  return null;
+  // Also soft delete the parent catalog record
+  const parentCatalogResult = await db('all_item_parents_catalogs')
+    .where({ master_pdf_id: masterPdfId, is_delete: false })
+    .whereNull('deleted_at')
+    .update({
+      is_delete: true,
+      deleted_at: db.fn.now(),
+      deleted_by: userId
+    })
+    .returning('*');
+  
+  return {
+    master_pdf_id: masterPdfId,
+    deleted_items: deletedItems,
+    deleted_parent_catalog: parentCatalogResult[0] || null
+  };
 };
 
 /**
  * Find master_pdf by master_pdf_id
  */
-const findMasterPdfById = async (masterPdfId) => {
+const findMasterPdfById = async (finalMasterPdfId) => {
   const data = await db(MASTER_PDF_TABLE)
-    .where({ master_pdf_id: masterPdfId, is_delete: false })
+    .where({ master_pdf_id: finalMasterPdfId, is_delete: false })
     .whereNull('deleted_at')
     .first();
   
@@ -1051,7 +1060,7 @@ const findMasterPdfById = async (masterPdfId) => {
 /**
  * Find data master category by master_pdf_id dengan struktur yang diinginkan
  */
-const findDataMasterCategoryByMasterPdfId = async (masterPdfId) => {
+const findDataMasterCategoryByMasterPdfId = async (finalMasterPdfId) => {
   const allCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
   const dataMasterCategory = [];
   
@@ -1072,7 +1081,7 @@ const findDataMasterCategoryByMasterPdfId = async (masterPdfId) => {
       )
       .leftJoin(relatedTables.master, `${tableName}.${relatedTables.masterIdField}`, `${relatedTables.master}.${getMasterTableIdField(catalogType)}`)
       .leftJoin(relatedTables.type, `${tableName}.${relatedTables.typeIdField}`, `${relatedTables.type}.${relatedTables.typeIdField}`)
-      .where({ [`${tableName}.master_pdf_id`]: masterPdfId, [`${tableName}.is_delete`]: false })
+      .where({ [`${tableName}.master_pdf_id`]: finalMasterPdfId, [`${tableName}.is_delete`]: false })
       .whereNull(`${tableName}.deleted_at`)
       .orderBy(`${tableName}.created_at`, 'desc');
     
@@ -1127,7 +1136,7 @@ const findDataMasterCategoryByMasterPdfId = async (masterPdfId) => {
     const parentCatalogData = await db('all_item_parents_catalogs')
       .select('file_foto')
       .where({
-        master_pdf_id: masterPdfId,
+        master_pdf_id: finalMasterPdfId,
         master_catalog: group.master_catalog,
         master_category_id: group.master_category_id,
         type_category_id: group.type_category_id,

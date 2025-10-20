@@ -84,7 +84,7 @@ const allItemCatalogsSchemas = {
       },
 
       put: {
-        summary: 'Mengupdate item katalog berdasarkan ID',
+        summary: 'Mengupdate item katalog berdasarkan master_pdf_id',
         tags: ['All Item Catalogs'],
         security: [
           {
@@ -100,7 +100,7 @@ const allItemCatalogsSchemas = {
               type: 'string',
               format: 'uuid'
             },
-            description: 'ID item katalog'
+            description: 'Master PDF ID (master_pdf_id) - ID dari tabel master_pdf'
           }
         ],
         requestBody: {
@@ -173,7 +173,7 @@ const allItemCatalogsSchemas = {
       },
 
       delete: {
-        summary: 'Menghapus item katalog berdasarkan ID (soft delete)',
+        summary: 'Menghapus item katalog berdasarkan master_pdf_id (soft delete)',
         tags: ['All Item Catalogs'],
         security: [
           {
@@ -189,7 +189,7 @@ const allItemCatalogsSchemas = {
               type: 'string',
               format: 'uuid'
             },
-            description: 'ID item katalog'
+            description: 'Master PDF ID (master_pdf_id) - ID dari tabel master_pdf'
           }
         ],
         responses: {

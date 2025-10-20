@@ -34,8 +34,11 @@ POST /api/v1/all-item-catalogs/get
 
 ### 2. Get Item by ID
 ```
-GET /api/v1/all-item-catalogs/{id}
+GET /api/v1/all-item-catalogs/{master_pdf_id}
 ```
+
+**Parameter:**
+- `master_pdf_id`: ID dari tabel master_pdf
 
 ### 3. Create Item
 ```
@@ -52,15 +55,21 @@ POST /api/v1/all-item-catalogs/create
 
 ### 4. Update Item
 ```
-PUT /api/v1/all-item-catalogs/{id}
+PUT /api/v1/all-item-catalogs/{master_pdf_id}
 ```
+
+**Parameter:**
+- `master_pdf_id`: ID dari tabel master_pdf
 
 **Form Data:** Sama dengan create
 
 ### 5. Delete Item
 ```
-DELETE /api/v1/all-item-catalogs/{id}
+DELETE /api/v1/all-item-catalogs/{master_pdf_id}
 ```
+
+**Parameter:**
+- `master_pdf_id`: ID dari tabel master_pdf
 
 ## Master Catalog Types
 
