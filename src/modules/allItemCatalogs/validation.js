@@ -158,10 +158,17 @@ const updateValidation = [
     .withMessage('Name PDF harus berupa string')
     .trim(),
   body('master_catalog')
-    .notEmpty()
-    .withMessage('master_catalog wajib diisi')
-    .isIn(['engine', 'axle', 'cabin', 'steering', 'transmission'])
-    .withMessage('master_catalog harus berupa: engine, axle, cabin, steering, atau transmission'),
+    .optional()
+    .custom((value) => {
+      if (!value || value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const allowedValues = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
+      if (!allowedValues.includes(value)) {
+        throw new Error('master_catalog harus berupa: engine, axle, cabin, steering, atau transmission');
+      }
+      return true;
+    }),
   body('master_category_id')
     .optional()
     .custom((value) => {

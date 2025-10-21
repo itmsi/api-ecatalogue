@@ -367,23 +367,6 @@ const update = async (req, res) => {
     const { id } = req.params;
     const { name_pdf, master_catalog, master_category_id, type_category_id, use_csv } = req.body;
     
-    // Validasi master_catalog
-    if (!master_catalog) {
-      await trx.rollback();
-      return errorResponse(res, { 
-        message: 'master_catalog wajib diisi' 
-      }, 400);
-    }
-    
-    // Validasi nilai master_catalog yang diizinkan
-    const allowedCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
-    if (!allowedCatalogTypes.includes(master_catalog.toLowerCase())) {
-      await trx.rollback();
-      return errorResponse(res, { 
-        message: 'master_catalog harus berupa: engine, axle, cabin, steering, atau transmission' 
-      }, 400);
-    }
-    
     // Get user ID dari token
     const userId = req.user?.employee_id || req.user?.user_id || null;
     
@@ -499,7 +482,7 @@ const update = async (req, res) => {
       dataItems, 
       userId, 
       fileFotoUrl,
-      master_catalog.toLowerCase(),
+      master_catalog ? master_catalog.toLowerCase() : null,
       master_category_id,
       type_category_id
     );

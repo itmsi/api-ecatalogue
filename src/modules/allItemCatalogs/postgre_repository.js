@@ -855,25 +855,69 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
     .whereNull('deleted_at')
     .first();
   
-  if (!masterPdfExists) {
-    return null;
+  // Jika masterCatalog tidak ada, ambil dari data yang sudah ada atau gunakan yang diberikan
+  let finalMasterCatalog = masterCatalog;
+  if (!finalMasterCatalog && masterPdfExists) {
+    finalMasterCatalog = masterPdfExists.master_catalog;
   }
   
-  // Find or create master_pdf dengan transaction
-  const finalMasterPdfId = await findOrCreateMasterPdfWithTransaction(trx, namePdf, masterCatalog, userId);
+  // Jika tidak ada masterCatalog sama sekali, return error
+  if (!finalMasterCatalog) {
+    throw new Error('master_catalog harus diisi karena data tidak ditemukan di database');
+  }
+  
+  // Untuk UPDATE, gunakan master_pdf_id yang diberikan, bukan membuat yang baru
+  let finalMasterPdfId = masterPdfId;
+  
+  // Cek apakah master_pdf_id yang diberikan ada di database
+  const existingMasterPdf = await trx('master_pdf')
+    .where({ master_pdf_id: masterPdfId, is_delete: false })
+    .whereNull('deleted_at')
+    .first();
+  
+  if (existingMasterPdf) {
+    // Update master_pdf yang sudah ada dengan data baru
+    await trx('master_pdf')
+      .where({ master_pdf_id: masterPdfId })
+      .update({
+        name_pdf: namePdf,
+        master_catalog: finalMasterCatalog,
+        updated_at: trx.fn.now(),
+        updated_by: userId
+      });
+  } else {
+    // Jika tidak ada, buat yang baru dengan master_pdf_id yang sama
+    await trx('master_pdf')
+      .insert({
+        master_pdf_id: masterPdfId,
+        name_pdf: namePdf,
+        master_catalog: finalMasterCatalog,
+        created_at: trx.fn.now(),
+        created_by: userId,
+        updated_at: trx.fn.now(),
+        updated_by: userId,
+        is_delete: false
+      });
+  }
   
   // Determine table and related fields based on masterCatalog
-  const tableName = getTableName(masterCatalog);
-  const relatedTables = getRelatedTables(masterCatalog);
-  const idFieldName = getIdFieldName(masterCatalog);
+  const tableName = getTableName(finalMasterCatalog);
+  const relatedTables = getRelatedTables(finalMasterCatalog);
+  const idFieldName = getIdFieldName(finalMasterCatalog);
   
   if (!tableName || !relatedTables || !idFieldName) {
-    throw new Error(`Invalid master_catalog: ${masterCatalog}`);
+    throw new Error(`Invalid master_catalog: ${finalMasterCatalog}`);
   }
+  
+  // Gunakan nilai yang sudah ada jika tidak ada yang baru
+  const finalMasterCategoryId = masterCategoryId || (masterPdfExists ? masterPdfExists.master_category_id : null);
+  const finalTypeCategoryId = typeCategoryId || (masterPdfExists ? masterPdfExists.type_category_id : null);
   
   console.log('=== REPOSITORY UPDATE: masterPdfId:', masterPdfId);
   console.log('=== REPOSITORY UPDATE: finalMasterPdfId:', finalMasterPdfId);
-  console.log('=== REPOSITORY UPDATE: masterCatalog:', masterCatalog);
+  console.log('=== REPOSITORY UPDATE: finalMasterCatalog:', finalMasterCatalog);
+  console.log('=== REPOSITORY UPDATE: finalMasterCategoryId:', finalMasterCategoryId);
+  console.log('=== REPOSITORY UPDATE: finalTypeCategoryId:', finalTypeCategoryId);
   console.log('=== REPOSITORY UPDATE: tableName:', tableName);
   console.log('=== REPOSITORY UPDATE: fileFotoUrl:', fileFotoUrl);
   console.log('=== REPOSITORY UPDATE: dataItems count:', dataItems.length);
@@ -886,18 +930,27 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
   };
   
   // Add conditions for master_id, type_id jika ada
-  if (masterCategoryId) deleteWhereClause[relatedTables.masterIdField] = masterCategoryId;
-  if (typeCategoryId) deleteWhereClause[relatedTables.typeIdField] = typeCategoryId;
+  if (finalMasterCategoryId) deleteWhereClause[relatedTables.masterIdField] = finalMasterCategoryId;
+  if (finalTypeCategoryId) deleteWhereClause[relatedTables.typeIdField] = finalTypeCategoryId;
   
-  const deletedItems = await trx(tableName)
+  // Hanya delete jika ada data yang akan dihapus
+  let deletedItems = [];
+  const existingItems = await trx(tableName)
     .where(deleteWhereClause)
     .whereNull('deleted_at')
-    .update({
-      is_delete: true,
-      deleted_at: trx.fn.now(),
-      deleted_by: userId
-    })
-    .returning('*');
+    .select('*');
+  
+  if (existingItems.length > 0) {
+    deletedItems = await trx(tableName)
+      .where(deleteWhereClause)
+      .whereNull('deleted_at')
+      .update({
+        is_delete: true,
+        deleted_at: trx.fn.now(),
+        deleted_by: userId
+      })
+      .returning('*');
+  }
   
   console.log('=== REPOSITORY UPDATE: Deleted items count:', deletedItems.length);
   
@@ -911,8 +964,8 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
     
     const itemData = {
       master_pdf_id: finalMasterPdfId,
-      [relatedTables.masterIdField]: masterCategoryId || null, // Set from request body
-      [relatedTables.typeIdField]: typeCategoryId || null, // Set from request body
+      [relatedTables.masterIdField]: finalMasterCategoryId || null, // Set from request body or existing data
+      [relatedTables.typeIdField]: finalTypeCategoryId || null, // Set from request body or existing data
       target_id: item.target_id || null,
       part_number: item.part_number || null,
       catalog_item_name_en: item.catalog_item_name_en || null,
@@ -945,21 +998,50 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
   if (results.length > 0) {
     console.log('=== REPOSITORY UPDATE: Creating/Updating parent catalog record ===');
     console.log('finalMasterPdfId:', finalMasterPdfId);
-    console.log('masterCatalog:', masterCatalog);
-    console.log('masterCategoryId:', masterCategoryId);
-    console.log('typeCategoryId:', typeCategoryId);
+    console.log('finalMasterCatalog:', finalMasterCatalog);
+    console.log('finalMasterCategoryId:', finalMasterCategoryId);
+    console.log('finalTypeCategoryId:', finalTypeCategoryId);
     console.log('fileFotoUrl:', fileFotoUrl);
     
     try {
-      parentCatalogRecord = await allItemParentsCatalogsRepo.findOrCreateWithTransaction(
-        trx,
-        finalMasterPdfId,
-        masterCatalog,
-        masterCategoryId,
-        typeCategoryId,
-        fileFotoUrl,
-        userId
-      );
+      // Untuk UPDATE, cek apakah ada parent catalog record yang sudah ada dengan master_pdf_id yang sama
+      let existingParentRecord = null;
+      if (masterPdfExists) {
+        // Jika ada data lama, gunakan parent catalog record yang sudah ada
+        existingParentRecord = masterPdfExists;
+      } else {
+        // Cari parent catalog record yang sudah ada dengan master_pdf_id yang sama
+        existingParentRecord = await trx('all_item_parents_catalogs')
+          .where({ master_pdf_id: finalMasterPdfId, is_delete: false })
+          .whereNull('deleted_at')
+          .first();
+      }
+      
+      if (existingParentRecord) {
+        // Update parent catalog record yang sudah ada
+        parentCatalogRecord = await allItemParentsCatalogsRepo.updateWithTransaction(
+          trx,
+          existingParentRecord.all_item_parents_catalog_id,
+          {
+            master_catalog: finalMasterCatalog,
+            master_category_id: finalMasterCategoryId,
+            type_category_id: finalTypeCategoryId,
+            file_foto: fileFotoUrl
+          },
+          userId
+        );
+      } else {
+        // Buat parent catalog record baru
+        parentCatalogRecord = await allItemParentsCatalogsRepo.findOrCreateWithTransaction(
+          trx,
+          finalMasterPdfId,
+          finalMasterCatalog,
+          finalMasterCategoryId,
+          finalTypeCategoryId,
+          fileFotoUrl,
+          userId
+        );
+      }
       
       console.log('Parent catalog record created/updated:', parentCatalogRecord);
     } catch (error) {
