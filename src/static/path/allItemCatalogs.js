@@ -372,11 +372,119 @@ const allItemCatalogsPaths = {
   '/all-item-catalogs/download-template': {
     get: {
       tags: ['All Item Catalogs'],
-      summary: 'Download CSV template for data import',
-      description: 'Download a general CSV template file for importing item catalog data. The template includes sample data that can be used for any catalog type (engine, axle, cabin, steering, transmission).',
+      summary: 'Get CSV template download information',
+      description: 'Get information about CSV template for importing item catalog data. Returns download link and template details.',
       security: [
         {
           bearerAuth: []
+        }
+      ],
+      responses: {
+        200: {
+          description: 'Template information successfully retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean',
+                    example: true
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      filename: {
+                        type: 'string',
+                        example: 'item_catalog_template_2025-10-21T04-35-06-750Z.csv'
+                      },
+                      download_link: {
+                        type: 'string',
+                        example: 'http://localhost:9550/api/catalogs/all-item-catalogs/download-template-file/item_catalog_template_2025-10-21T04-35-06-750Z.csv'
+                      },
+                      file_size: {
+                        type: 'integer',
+                        example: 456
+                      },
+                      content_type: {
+                        type: 'string',
+                        example: 'text/csv'
+                      },
+                      description: {
+                        type: 'string',
+                        example: 'CSV template untuk import data item catalog. Template ini dapat digunakan untuk semua jenis katalog (engine, axle, cabin, steering, transmission).'
+                      },
+                      sample_data: {
+                        type: 'object',
+                        properties: {
+                          headers: {
+                            type: 'array',
+                            items: {
+                              type: 'string'
+                            },
+                            example: ['target_id', 'part_number', 'catalog_item_name_en', 'catalog_item_name_ch', 'description', 'quantity']
+                          },
+                          example_rows: {
+                            type: 'integer',
+                            example: 3
+                          }
+                        }
+                      }
+                    }
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Template CSV berhasil dibuat'
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized - Invalid or missing token',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  '/all-item-catalogs/download-template-file/{filename}': {
+    get: {
+      tags: ['All Item Catalogs'],
+      summary: 'Download CSV template file',
+      description: 'Download the actual CSV template file for importing item catalog data.',
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
+      parameters: [
+        {
+          name: 'filename',
+          in: 'path',
+          required: true,
+          description: 'Filename of the template to download',
+          schema: {
+            type: 'string'
+          },
+          example: 'item_catalog_template_2025-10-21T04-35-06-750Z.csv'
         }
       ],
       responses: {
@@ -402,6 +510,16 @@ const allItemCatalogsPaths = {
         },
         401: {
           description: 'Unauthorized - Invalid or missing token',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        },
+        404: {
+          description: 'Template file not found',
           content: {
             'application/json': {
               schema: {

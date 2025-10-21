@@ -30,6 +30,11 @@ router.get(
 );
 
 router.get(
+  '/download-template-file/:filename',
+  handler.downloadTemplateFile
+);
+
+router.get(
   '/:id',
   verifyToken,
   getByIdValidation,

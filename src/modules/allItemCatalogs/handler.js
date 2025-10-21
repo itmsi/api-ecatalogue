@@ -537,17 +537,68 @@ const downloadTemplate = async (req, res) => {
     // Gabungkan header dan sample data
     const csvContent = csvHeader + sampleData;
     
-    // Set headers untuk download file
-    const filename = 'item_catalog_template.csv';
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Cache-Control', 'no-cache');
+    // Generate filename dengan timestamp untuk uniqueness
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `item_catalog_template_${timestamp}.csv`;
     
-    // Kirim file CSV
-    res.send(csvContent);
+    // Generate download link (bisa disesuaikan dengan base URL aplikasi)
+    const baseUrl = process.env.BASE_URL || 'http://localhost:9550';
+    const downloadLink = `${baseUrl}/api/catalogs/all-item-catalogs/download-template-file/${filename}`;
+    
+    // Return response dengan format JSON yang konsisten
+    return baseResponse(res, {
+      data: {
+        filename: filename,
+        download_link: downloadLink,
+        file_size: Buffer.byteLength(csvContent, 'utf8'),
+        content_type: 'text/csv',
+        description: 'CSV template untuk import data item catalog. Template ini dapat digunakan untuk semua jenis katalog (engine, axle, cabin, steering, transmission).',
+        sample_data: {
+          headers: ['target_id', 'part_number', 'catalog_item_name_en', 'catalog_item_name_ch', 'description', 'quantity'],
+          example_rows: 3
+        }
+      },
+      message: 'Template CSV berhasil dibuat'
+    });
     
   } catch (error) {
     return errorResponse(res, error);
+  }
+};
+
+/**
+ * Download CSV template file
+ */
+const downloadTemplateFile = async (req, res) => {
+  try {
+    // Template CSV header
+    const csvHeader = 'target_id,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity\n';
+    
+    // Sample data general untuk semua jenis katalog
+    const sampleData = 'T001,PN001,Sample Part 1,样品部件1,Sample description for any catalog type,10\nT002,PN002,Sample Part 2,样品部件2,Sample description for any catalog type,5\nT003,PN003,Sample Part 3,样品部件3,Sample description for any catalog type,15\n';
+    
+    // Gabungkan header dan sample data
+    const csvContent = csvHeader + sampleData;
+    
+    // Set headers untuk download file langsung
+    const filename = 'item_catalog_template.csv';
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', Buffer.byteLength(csvContent, 'utf8'));
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    // Kirim file CSV langsung tanpa delay
+    res.end(csvContent);
+    
+  } catch (error) {
+    console.error('Error downloading template file:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error downloading template file',
+      error: error.message
+    });
   }
 };
 
@@ -581,5 +632,6 @@ module.exports = {
   create,
   update,
   remove,
-  downloadTemplate
+  downloadTemplate,
+  downloadTemplateFile
 };
