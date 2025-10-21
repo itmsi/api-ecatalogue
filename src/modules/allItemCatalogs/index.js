@@ -22,6 +22,14 @@ router.post(
 );
 
 router.get(
+  '/download-template',
+  verifyToken,
+  downloadTemplateValidation,
+  validateMiddleware,
+  handler.downloadTemplate
+);
+
+router.get(
   '/:id',
   verifyToken,
   getByIdValidation,
@@ -53,14 +61,6 @@ router.delete(
   deleteValidation,
   validateMiddleware,
   handler.remove
-);
-
-router.get(
-  '/download-template',
-  verifyToken,
-  downloadTemplateValidation,
-  validateMiddleware,
-  handler.downloadTemplate
 );
 
 module.exports = router;

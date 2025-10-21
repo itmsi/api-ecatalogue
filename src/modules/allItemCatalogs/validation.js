@@ -231,14 +231,9 @@ const deleteValidation = [
 
 /**
  * Validation rules for download template
+ * No validation needed since no parameters are required
  */
-const downloadTemplateValidation = [
-  query('master_catalog')
-    .notEmpty()
-    .withMessage('Parameter master_catalog wajib diisi')
-    .isIn(['engine', 'axle', 'cabin', 'steering', 'transmission'])
-    .withMessage('master_catalog harus berupa: engine, axle, cabin, steering, atau transmission')
-];
+const downloadTemplateValidation = [];
 
 module.exports = {
   getListValidation,

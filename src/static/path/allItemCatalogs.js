@@ -366,79 +366,56 @@ const allItemCatalogsPaths = {
           }
         }
       }
-    },
+    }
+  },
 
-    '/all-item-catalogs/download-template': {
-      get: {
-        tags: ['All Item Catalogs'],
-        summary: 'Download CSV template for data import',
-        description: 'Download a CSV template file for importing item catalog data. The template includes sample data based on the specified master_catalog type.',
-        security: [
-          {
-            bearerAuth: []
+  '/all-item-catalogs/download-template': {
+    get: {
+      tags: ['All Item Catalogs'],
+      summary: 'Download CSV template for data import',
+      description: 'Download a general CSV template file for importing item catalog data. The template includes sample data that can be used for any catalog type (engine, axle, cabin, steering, transmission).',
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
+      responses: {
+        200: {
+          description: 'CSV template file successfully downloaded',
+          content: {
+            'text/csv': {
+              schema: {
+                type: 'string',
+                format: 'binary'
+              }
+            }
+          },
+          headers: {
+            'Content-Disposition': {
+              description: 'Attachment filename',
+              schema: {
+                type: 'string',
+                example: 'attachment; filename="item_catalog_template.csv"'
+              }
+            }
           }
-        ],
-        parameters: [
-          {
-            name: 'master_catalog',
-            in: 'query',
-            required: true,
-            description: 'Catalog type for the template to download',
-            schema: {
-              type: 'string',
-              enum: ['engine', 'axle', 'cabin', 'steering', 'transmission']
-            },
-            example: 'engine'
+        },
+        401: {
+          description: 'Unauthorized - Invalid or missing token',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
           }
-        ],
-        responses: {
-          200: {
-            description: 'CSV template file successfully downloaded',
-            content: {
-              'text/csv': {
-                schema: {
-                  type: 'string',
-                  format: 'binary'
-                }
-              }
-            },
-            headers: {
-              'Content-Disposition': {
-                description: 'Attachment filename',
-                schema: {
-                  type: 'string',
-                  example: 'attachment; filename="item_catalog_engine_template.csv"'
-                }
-              }
-            }
-          },
-          400: {
-            description: 'Bad request - Invalid master_catalog parameter',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized - Invalid or missing token',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
-              }
-            }
-          },
-          500: {
-            description: 'Internal server error',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
               }
             }
           }
