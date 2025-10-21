@@ -138,7 +138,7 @@ const allItemCatalogsSchemas = {
                   data_items: {
                     type: 'string',
                     description: 'JSON string dari array data items (wajib jika use_csv = false)',
-                    example: '[{"target_id":"T001","diagram_serial_number":"DSN-001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
+                    example: '[{"target_id":"T001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
                   },
                   file_foto: {
                     type: 'string',
@@ -267,7 +267,7 @@ const allItemCatalogsSchemas = {
                   data_items: {
                     type: 'string',
                     description: 'JSON string dari array data items (wajib jika use_csv = false)',
-                    example: '[{"target_id":"T001","diagram_serial_number":"DSN-001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
+                    example: '[{"target_id":"T001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
                   },
                   file_foto: {
                     type: 'string',
@@ -303,6 +303,72 @@ const allItemCatalogsSchemas = {
           }
         }
       }
+    },
+
+    '/api/v1/all-item-catalogs/download-template': {
+      get: {
+        summary: 'Download template CSV untuk import data',
+        tags: ['All Item Catalogs'],
+        security: [
+          {
+            bearerAuth: []
+          }
+        ],
+        parameters: [
+          {
+            name: 'master_catalog',
+            in: 'query',
+            required: true,
+            description: 'Jenis katalog untuk template yang akan didownload',
+            schema: {
+              type: 'string',
+              enum: ['engine', 'axle', 'cabin', 'steering', 'transmission']
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: 'File CSV template berhasil didownload',
+            content: {
+              'text/csv': {
+                schema: {
+                  type: 'string',
+                  format: 'binary'
+                }
+              }
+            },
+            headers: {
+              'Content-Disposition': {
+                description: 'Attachment filename',
+                schema: {
+                  type: 'string',
+                  example: 'attachment; filename="item_catalog_engine_template.csv"'
+                }
+              }
+            }
+          },
+          400: {
+            description: 'Parameter master_catalog tidak valid',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          },
+          401: {
+            description: 'Unauthorized - Invalid or missing token',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   AllItemCatalog: {
@@ -331,11 +397,6 @@ const allItemCatalogsSchemas = {
         type: 'string',
         nullable: true,
         description: 'Target ID'
-      },
-      diagram_serial_number: {
-        type: 'string',
-        nullable: true,
-        description: 'Diagram serial number'
       },
       part_number: {
         type: 'string',
@@ -467,7 +528,7 @@ const allItemCatalogsSchemas = {
       data_items: {
         type: 'string',
         description: 'JSON string of data items array (required if use_csv = false)',
-        example: '[{"target_id":"T001","diagram_serial_number":"DSN-001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
+        example: '[{"target_id":"T001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
       },
       file_foto: {
         type: 'string',
@@ -513,7 +574,7 @@ const allItemCatalogsSchemas = {
       data_items: {
         type: 'string',
         description: 'JSON string of data items array (required if use_csv = false)',
-        example: '[{"target_id":"T001","diagram_serial_number":"DSN-001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
+        example: '[{"target_id":"T001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]'
       },
       file_foto: {
         type: 'string',
@@ -536,12 +597,6 @@ const allItemCatalogsSchemas = {
         nullable: true,
         description: 'Target ID',
         example: 'T001'
-      },
-      diagram_serial_number: {
-        type: 'string',
-        nullable: true,
-        description: 'Diagram serial number',
-        example: 'DSN-001'
       },
       part_number: {
         type: 'string',
@@ -747,10 +802,6 @@ const allItemCatalogsSchemas = {
                       target_id: {
                         type: 'string',
                         description: 'Target ID'
-                      },
-                      diagram_serial_number: {
-                        type: 'string',
-                        description: 'Diagram serial number'
                       },
                       part_number: {
                         type: 'string',

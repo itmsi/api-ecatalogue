@@ -81,6 +81,8 @@ const itemCatalogCabineSchema = require('./schema/itemCatalogCabine');
 const itemCatalogCabinePaths = require('./path/itemCatalogCabine');
 const allItemCatalogsSchema = require('./schema/allItemCatalogs');
 const allItemCatalogsPaths = require('./path/allItemCatalogs');
+const masterPdfSchema = require('./schema/masterPdf');
+const masterPdfPaths = require('./path/masterPdf');
 // Combine all schemas
 const schemas = {
   // ...exampleSchema,
@@ -110,6 +112,7 @@ const schemas = {
   ...itemCatalogSteeringSchema,
   ...itemCatalogCabineSchema,
   ...allItemCatalogsSchema,
+  ...masterPdfSchema,
   // ...yourModuleSchema,
 };
 
@@ -142,6 +145,7 @@ const paths = {
   ...itemCatalogSteeringPaths,
   ...itemCatalogCabinePaths,
   ...allItemCatalogsPaths,
+  ...masterPdfPaths,
   // ...yourModulePaths,
 };
 

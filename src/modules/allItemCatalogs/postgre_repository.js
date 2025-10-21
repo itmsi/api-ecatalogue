@@ -746,7 +746,6 @@ const createWithTransaction = async (trx, namePdf, dataItems, userId, fileFotoUr
       [relatedTables.masterIdField]: masterCategoryId || null, // Set from request body
       [relatedTables.typeIdField]: typeCategoryId || null, // Set from request body
       target_id: item.target_id || null,
-      diagram_serial_number: item.diagram_serial_number || null,
       part_number: item.part_number || null,
       catalog_item_name_en: item.catalog_item_name_en || null,
       catalog_item_name_ch: item.catalog_item_name_ch || null,
@@ -915,7 +914,6 @@ const updateWithTransaction = async (trx, masterPdfId, namePdf, dataItems, userI
       [relatedTables.masterIdField]: masterCategoryId || null, // Set from request body
       [relatedTables.typeIdField]: typeCategoryId || null, // Set from request body
       target_id: item.target_id || null,
-      diagram_serial_number: item.diagram_serial_number || null,
       part_number: item.part_number || null,
       catalog_item_name_en: item.catalog_item_name_en || null,
       catalog_item_name_ch: item.catalog_item_name_ch || null,
@@ -1096,7 +1094,6 @@ const findDataMasterCategoryByMasterPdfId = async (finalMasterPdfId) => {
           items_id: item[getIdFieldName(catalogType)],
           master_pdf_id: item.master_pdf_id,
           target_id: item.target_id,
-          diagram_serial_number: item.diagram_serial_number,
           part_number: item.part_number,
           catalog_item_name_en: item.catalog_item_name_en,
           catalog_item_name_ch: item.catalog_item_name_ch,

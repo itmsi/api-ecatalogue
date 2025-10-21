@@ -122,6 +122,10 @@ routing.use(`${API_TAG}/item_catalog_cabine`, itemCatalogCabineModule)
 const allItemCatalogsModule = require('../../modules/allItemCatalogs')
 routing.use(`${API_TAG}/all-item-catalogs`, allItemCatalogsModule)
 
+// Master PDF Module
+const masterPdfModule = require('../../modules/masterPdf')
+routing.use(`${API_TAG}/master-pdf`, masterPdfModule)
+
 // Tambahkan routes module Anda di sini
 // Example:
 // const yourModule = require('../../modules/yourModule')

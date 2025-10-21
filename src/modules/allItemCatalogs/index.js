@@ -6,7 +6,8 @@ const {
   createValidation,
   updateValidation,
   getByIdValidation,
-  deleteValidation
+  deleteValidation,
+  downloadTemplateValidation
 } = require('./validation');
 const { verifyToken } = require('../../middlewares/token');
 const { validateMiddleware } = require('../../middlewares/validation');
@@ -52,6 +53,14 @@ router.delete(
   deleteValidation,
   validateMiddleware,
   handler.remove
+);
+
+router.get(
+  '/download-template',
+  verifyToken,
+  downloadTemplateValidation,
+  validateMiddleware,
+  handler.downloadTemplate
 );
 
 module.exports = router;

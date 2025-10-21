@@ -49,9 +49,9 @@ POST /api/v1/all-item-catalogs/create
 - `name_pdf` (required): Nama file PDF
 - `master_catalog` (required): Jenis katalog (engine, axle, cabin, steering, transmission)
 - `use_csv` (optional): Boolean, default false
-- `data_items` (required jika use_csv = false): JSON string array data items
+- `data_items` (required jika use_csv = false): JSON string array data items dengan format: `[{"target_id":"T001","part_number":"PN-12345","catalog_item_name_en":"Engine Oil Filter","catalog_item_name_ch":"机油滤清器","description":"High quality engine oil filter","quantity":2}]`
 - `file_foto` (optional): File foto
-- `file_csv` (required jika use_csv = true): File CSV
+- `file_csv` (required jika use_csv = true): File CSV dengan format kolom: `target_id,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity`
 
 ### 4. Update Item
 ```
@@ -70,6 +70,23 @@ DELETE /api/v1/all-item-catalogs/{master_pdf_id}
 
 **Parameter:**
 - `master_pdf_id`: ID dari tabel master_pdf
+
+### 6. Download CSV Template
+```
+GET /api/v1/all-item-catalogs/download-template?master_catalog={catalog_type}
+```
+
+**Query Parameters:**
+- `master_catalog` (required): Jenis katalog (engine, axle, cabin, steering, transmission)
+
+**Response:**
+- File CSV template dengan format: `target_id,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity`
+- Filename: `item_catalog_{master_catalog}_template.csv`
+
+**Contoh:**
+```
+GET /api/v1/all-item-catalogs/download-template?master_catalog=engine
+```
 
 ## Master Catalog Types
 

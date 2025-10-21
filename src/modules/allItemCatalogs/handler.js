@@ -129,7 +129,6 @@ const processCsvToDataItems = async (csvBuffer) => {
   // Convert CSV data ke format data_items
   const dataItems = csvData.map(row => ({
     target_id: row.target_id || null,
-    diagram_serial_number: row.diagram_serial_number || null,
     part_number: row.part_number || null,
     catalog_item_name_en: row.catalog_item_name_en || null,
     catalog_item_name_ch: row.catalog_item_name_ch || null,
@@ -525,6 +524,70 @@ const update = async (req, res) => {
 };
 
 /**
+ * Download CSV template
+ */
+const downloadTemplate = async (req, res) => {
+  try {
+    const { master_catalog } = req.query;
+    
+    // Validasi master_catalog
+    if (!master_catalog) {
+      return errorResponse(res, { 
+        message: 'Parameter master_catalog wajib diisi' 
+      }, 400);
+    }
+    
+    // Validasi nilai master_catalog yang diizinkan
+    const allowedCatalogTypes = ['engine', 'axle', 'cabin', 'steering', 'transmission'];
+    if (!allowedCatalogTypes.includes(master_catalog.toLowerCase())) {
+      return errorResponse(res, { 
+        message: 'master_catalog harus berupa: engine, axle, cabin, steering, atau transmission' 
+      }, 400);
+    }
+    
+    // Template CSV header
+    const csvHeader = 'target_id,part_number,catalog_item_name_en,catalog_item_name_ch,description,quantity\n';
+    
+    // Sample data berdasarkan master_catalog
+    let sampleData = '';
+    switch (master_catalog.toLowerCase()) {
+      case 'engine':
+        sampleData = 'T001,PN001,Engine Oil Filter,机油滤清器,High quality engine oil filter,10\nT002,PN002,Air Filter,空气滤清器,Durable air filter component,5\nT003,PN003,Spark Plug,火花塞,Performance spark plug,15\n';
+        break;
+      case 'axle':
+        sampleData = 'T001,PN001,Axle Bearing,车轴轴承,Heavy duty axle bearing,8\nT002,PN002,Wheel Hub,轮毂,Aluminum wheel hub,12\nT003,PN003,CV Joint,万向节,Constant velocity joint,6\n';
+        break;
+      case 'cabin':
+        sampleData = 'T001,PN001,Seat Cover,座椅套,Leather seat cover,4\nT002,PN002,Dashboard Panel,仪表板,ABS dashboard panel,2\nT003,PN003,Steering Wheel,方向盘,Leather wrapped steering wheel,3\n';
+        break;
+      case 'steering':
+        sampleData = 'T001,PN001,Steering Pump,转向泵,Hydraulic steering pump,5\nT002,PN002,Tie Rod End,横拉杆球头,Heavy duty tie rod end,10\nT003,PN003,Steering Rack,转向机,Rack and pinion steering,2\n';
+        break;
+      case 'transmission':
+        sampleData = 'T001,PN001,Transmission Gear,变速齿轮,Forged transmission gear,8\nT002,PN002,Clutch Disc,离合器片,High performance clutch disc,6\nT003,PN003,Input Shaft,输入轴,Hardened input shaft,4\n';
+        break;
+      default:
+        sampleData = 'T001,PN001,Sample Part 1,样品部件1,Sample description,10\nT002,PN002,Sample Part 2,样品部件2,Sample description,5\nT003,PN003,Sample Part 3,样品部件3,Sample description,15\n';
+    }
+    
+    // Gabungkan header dan sample data
+    const csvContent = csvHeader + sampleData;
+    
+    // Set headers untuk download file
+    const filename = `item_catalog_${master_catalog}_template.csv`;
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'no-cache');
+    
+    // Kirim file CSV
+    res.send(csvContent);
+    
+  } catch (error) {
+    return errorResponse(res, error);
+  }
+};
+
+/**
  * Soft delete item
  */
 const remove = async (req, res) => {
@@ -553,5 +616,6 @@ module.exports = {
   getById,
   create,
   update,
-  remove
+  remove,
+  downloadTemplate
 };

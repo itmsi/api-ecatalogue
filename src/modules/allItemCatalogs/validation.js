@@ -1,4 +1,4 @@
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 
 /**
  * Validation rules for getting list with filters
@@ -229,10 +229,22 @@ const deleteValidation = [
     .withMessage('Format ID tidak valid')
 ];
 
+/**
+ * Validation rules for download template
+ */
+const downloadTemplateValidation = [
+  query('master_catalog')
+    .notEmpty()
+    .withMessage('Parameter master_catalog wajib diisi')
+    .isIn(['engine', 'axle', 'cabin', 'steering', 'transmission'])
+    .withMessage('master_catalog harus berupa: engine, axle, cabin, steering, atau transmission')
+];
+
 module.exports = {
   getListValidation,
   createValidation,
   updateValidation,
   getByIdValidation,
-  deleteValidation
+  deleteValidation,
+  downloadTemplateValidation
 };
