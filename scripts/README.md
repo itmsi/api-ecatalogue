@@ -5,7 +5,32 @@ Folder ini berisi utility scripts dan automation scripts untuk proyek.
 ## 📁 Available Scripts
 
 Saat ini tersedia:
+
+### Deployment Scripts
+- `deploy-server.sh` - Script untuk deployment server
+- `setup-server.sh` - Script untuk setup server
+- `setup-server-dirs.sh` - Script untuk membuat direktori server
+
+### Migration Scripts  
+- `run_migration.js` - Script untuk menjalankan database migration
 - `src/scripts/start-consumer.js` - RabbitMQ consumer starter
+- `src/scripts/migrate-urls.js` - Script untuk migrasi URL
+
+### Usage Examples
+
+```bash
+# Deploy server
+./scripts/deploy-server.sh
+
+# Setup server
+./scripts/setup-server.sh
+
+# Run migration
+node scripts/run_migration.js
+
+# Start consumer
+node src/scripts/start-consumer.js
+```
 
 ## 🔧 Menambahkan Script Baru
 
