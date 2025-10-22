@@ -179,29 +179,26 @@ const findOrCreate = async (masterPdfId, masterCatalog, masterCategoryId, typeCa
  * Find or create all_item_parents_catalog with transaction
  */
 const findOrCreateWithTransaction = async (trx, masterPdfId, masterCatalog, masterCategoryId, typeCategoryId, fileFoto, userId) => {
-  // Cek apakah sudah ada
+  // Cek apakah sudah ada dengan master_pdf_id yang sama (untuk update scenario)
   const existing = await trx(TABLE_NAME)
     .where({
       master_pdf_id: masterPdfId,
-      master_catalog: masterCatalog,
-      master_category_id: masterCategoryId,
-      type_category_id: typeCategoryId,
       is_delete: false
     })
     .whereNull('deleted_at')
     .first();
   
   if (existing) {
-    // Update file_foto jika ada yang baru
-    if (fileFoto && fileFoto !== existing.file_foto) {
-      return await updateWithTransaction(trx, existing.all_item_parents_catalog_id, {
-        file_foto: fileFoto
-      }, userId);
-    }
-    return existing;
+    // Update existing record dengan data baru
+    return await updateWithTransaction(trx, existing.all_item_parents_catalog_id, {
+      master_catalog: masterCatalog,
+      master_category_id: masterCategoryId,
+      type_category_id: typeCategoryId,
+      file_foto: fileFoto
+    }, userId);
   }
   
-  // Create baru
+  // Create baru jika tidak ada record dengan master_pdf_id yang sama
   const data = {
     master_pdf_id: masterPdfId,
     master_catalog: masterCatalog,
